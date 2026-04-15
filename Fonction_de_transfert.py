@@ -5,6 +5,7 @@ import os
 # Comment faire pour prendre en compte les trois profils ?
 # Remplacer Pos par la hauteur d'eau par souci de clarté
 # Normaliser pour les distances euclidiennes
+# blelbleblblble pas exactement mais ca retranscrit un pue l'effet de la phrase - Adriel Henault
 
 # VARIABLES GLOBALES
 
