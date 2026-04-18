@@ -2,10 +2,7 @@ import numpy as np
 import os
 
 ### TO-D0 ###
-# Comment faire pour prendre en compte les trois profils ?
-# Remplacer Pos par la hauteur d'eau par souci de clarté
 # Normaliser pour les distances euclidiennes
-# blelbleblblble pas exactement mais ca retranscrit un pue l'effet de la phrase - Adriel Henault
 
 # VARIABLES GLOBALES
 
@@ -16,7 +13,7 @@ n_sortie = 36225  # nombre de lignes d'un fichier de sortie
 # ouvrir les 3 blocks et les assembler dans entree de Delft3D
 
 with open(
-    "Fichier_d_encadrement/Lookup_table_Vougot/Delft3D_entrees/allblocks_Vougot.txt",
+    "/Users/adrielhenault/Documents/ECOLE DES PONTS/1A/TRAVAIL/SCIENTIFIQUE/PARCOURS RECHERCHE/Fichier_d_encadrement/Lookup_table_Vougot/Delft3D_entrees/allblocks_Vougot.txt",
     "r",
 ) as file:
     lines = file.readlines()[1:]
@@ -43,7 +40,7 @@ def nombre_fichier_sortie(n):
 def sortie_fichier(i: int) -> list:
     LSH = []
     ch = os.path.join(
-        "Fichier_d_encadrement",
+        "/Users/adrielhenault/Documents/ECOLE DES PONTS/1A/TRAVAIL/SCIENTIFIQUE/PARCOURS RECHERCHE/Fichier_d_encadrement",
         "Lookup_table_Vougot",
         "Delft3D_sorties_gamma04",
         "SH",
@@ -57,7 +54,7 @@ def sortie_fichier(i: int) -> list:
 
     LSL = []
     ch = os.path.join(
-        "Fichier_d_encadrement",
+        "/Users/adrielhenault/Documents/ECOLE DES PONTS/1A/TRAVAIL/SCIENTIFIQUE/PARCOURS RECHERCHE/Fichier_d_encadrement",
         "Lookup_table_Vougot",
         "Delft3D_sorties_gamma04",
         "SL",
@@ -87,12 +84,29 @@ def OS2NS(Hs: float, Tp: float, Dir: float, Pos: float, coef_maree: float, maree
 
     # Parcourir l'ensemble des données d'entrées et prendre les 5 plus petites distances euclidiennes à la situation en argument
 
-    argument = np.array([Hs, Tp, Dir, Pos])
-    five_closest = [[], [], [], [], []]
-    memo: list[float] = np.array([0] * n_valeurs_calc)
+    arg = [Hs, Tp, Dir, Pos]
 
+    # Normalisation de argument et de l'entrée pour application des poids à l'interpolation plus tard
+
+    mean_Hs = np.average(np.array([entree[i][0] for i in range(n_valeurs_calc)]))
+    mean_Tp = np.average(np.array([entree[i][1] for i in range(n_valeurs_calc)]))
+    mean_Dir = np.average(np.array([entree[i][2] for i in range(n_valeurs_calc)]))
+    mean_Pos = np.average(np.array([entree[i][3] for i in range(n_valeurs_calc)]))
+
+    means = [mean_Hs, mean_Tp, mean_Dir, mean_Pos]
+
+    arg_norm = np.array([Hs/mean_Hs, Tp/mean_Tp, Dir/mean_Dir, Pos/mean_Pos])
+
+    entree_norm = np.array([[0 for _ in range(4)] for _ in range(n_valeurs_calc)])
     for i in range(n_valeurs_calc):
-        memo[i] = distance_euclidienne(argument, entree[i])
+        for j in range(4):
+            entree_norm[i][j] = entree[i][j]/means[j]
+
+    five_closest = [[], [], [], [], []]
+    
+    memo: list[float] = np.array([0.] * n_valeurs_calc)
+    for i in range(n_valeurs_calc):
+        memo_norm[i] = distance_euclidienne(arg_norm, entree_norm[i])
 
     # Faire 5 minima en enlevant la valeur minimale à chaque fois ; stocker la distance et l'indice dans le tableau five_closest
 
@@ -114,7 +128,7 @@ def OS2NS(Hs: float, Tp: float, Dir: float, Pos: float, coef_maree: float, maree
 
     # Faire l'interpolation et retourner les valeurs finales
 
-    sortieL, sortieH = np.array([[0] * 8 for _ in range(n_sortie)]), np.array([[0] * 8 for _ in range(n_sortie)])
+    sortieL, sortieH = np.array([[0.] * 8 for _ in range(n_sortie)]), np.array([[0.] * 8 for _ in range(n_sortie)])
 
     for i in range(n_sortie):
         for j in range(8):
@@ -137,4 +151,5 @@ def OS2NS(Hs: float, Tp: float, Dir: float, Pos: float, coef_maree: float, maree
 
 
 a = OS2NS(0.26, 3, 280, 40, .5, True)
-print(len(a))
+print(a)
+
