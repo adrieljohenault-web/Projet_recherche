@@ -103,19 +103,19 @@ def OS2NS(Hs: float, Tp: float, Dir: float, Pos: float, coef_maree: float, maree
             entree_norm[i][j] = entree[i][j]/means[j]
 
     five_closest = [[], [], [], [], []]
-    
-    memo: list[float] = np.array([0.] * n_valeurs_calc)
+
+    memo_norm: list[float] = np.array([0.] * n_valeurs_calc)
     for i in range(n_valeurs_calc):
         memo_norm[i] = distance_euclidienne(arg_norm, entree_norm[i])
 
     # Faire 5 minima en enlevant la valeur minimale à chaque fois ; stocker la distance et l'indice dans le tableau five_closest
 
     for i in range(n_interpolation):
-        closest_index = int(np.argmin(memo))
-        closest_distance = float(np.min(memo))
-        closest_point = [float(entree[np.argmin(memo)][i]) for i in range(4)]
+        closest_index = int(np.argmin(memo_norm))
+        closest_distance = float(np.min(memo_norm))
+        closest_point = [float(entree[np.argmin(memo_norm)][i]) for i in range(4)]
         five_closest[i] = [closest_distance, closest_index, closest_point]
-        memo[np.argmin(memo)] = 1000000
+        memo_norm[np.argmin(memo)] = 1000000
 
     # Arriver aux données de sortie de Delft3D
 
@@ -148,8 +148,3 @@ def OS2NS(Hs: float, Tp: float, Dir: float, Pos: float, coef_maree: float, maree
             
     if maree : return coef_maree*sortieL + (1-coef_maree)*sortieH
     return sortieL, sortieH
-
-
-a = OS2NS(0.26, 3, 280, 40, .5, True)
-print(a)
-

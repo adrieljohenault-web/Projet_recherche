@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-
-n_sortie = 36225
+from Fonction_de_transfert import n_sortie
 
 sonde1 = [393153.67, 5388301.62]
 sonde2 = [392928.35, 5388515.85]
@@ -10,17 +9,14 @@ sonde3 = [392450.79, 5389091.85]
 sondes = [sonde1, sonde2, sonde3]
 
 with open(
-    "Fichier_d_encadrement/Lookup_table_Vougot/Delft3D_bathy/G2_Depth.txt",
+    "/Users/adrielhenault/Documents/ECOLE DES PONTS/1A/TRAVAIL/SCIENTIFIQUE/PARCOURS RECHERCHE/Fichier_d_encadrement/Lookup_table_Vougot/Delft3D_bathy/G2_Depth.txt",
     "r",
 ) as file:
     lines = file.readlines()
 for i in range(len(lines)):
     lines[i] = lines[i].split()
 
-entree = [[float(lines[i][j]) for j in range(3)] for i in range(n_sortie)]
-
-import numpy as np
-import matplotlib.pyplot as plt
+bathy = [[float(lines[i][j]) for j in range(3)] for i in range(n_sortie)]
 
 def generer_carte_bathymetrique_recherche(data_list):
     """
@@ -92,6 +88,3 @@ def generer_carte_bathymetrique_recherche(data_list):
 
     plt.tight_layout()
     plt.show()
-
-# --- Exécution ---
-generer_carte_bathymetrique_recherche(entree)

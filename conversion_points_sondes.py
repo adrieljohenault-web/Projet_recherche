@@ -1,50 +1,38 @@
-import matplotlib.pyplot as plt
+from Fonction_de_transfert import distance_euclidienne, n_sortie
+from Schéma_bathymétrie import bathy, sondes
 import numpy as np
 
-n_sortie = 36225
+### Choix des 4 points les plus proches des sondes pour réaliser une interpolation linéaire et choisir un point moyen qui les représentera. ###
 
-sonde1 = [393153.67, 5388301.62]
-sonde2 = [392928.35, 5388515.85]
-sonde3 = [392450.79, 5389091.85]
+# Création des poids pour l'interpolation
 
-sondes = [sonde1, sonde2, sonde3]
+d_sonde = [[0. for _ in range(n_sortie)] for _ in range(3)]
 
-with open(
-    "Fichier_d_encadrement/Lookup_table_Vougot/Delft3D_bathy/G2_Depth.txt",
-    "r",
-) as file:
-    lines = file.readlines()
-for i in range(len(lines)):
-    lines[i] = lines[i].split()
+for k in range(n_sortie):
+    for i in range(3):
+        d_sonde[i][k] = distance_euclidienne([bathy[k][0], bathy[k][1]], sondes[i])
 
-entree = [[float(lines[i][j]) for j in range(2)] for i in range(n_sortie)]
+points_inter = [[[] for _ in range(4)] for _ in range(3)]
 
+for i in range(4):
+    for j in range(3):
+        closest_index = np.argmin(d_sonde[j])
+        closest_distance = np.min(d_sonde[j])
+        closest_point = np.array([bathy[closest_index][0], bathy[closest_index][1]])
+        points_inter[j][i] = [closest_point, closest_distance, closest_index]
+        d_sonde[j][closest_index] = 10**10
 
-def distance_euclidienne(q1: list, q2: list):
-    """Calcule la distance euclidienne entre les deux array de même dimension q1 et q2"""
-    distcarre = 0
-    for k in range(len(q1)):
-        distcarre += (q1[k] - q2[k]) ** 2
-    return np.sqrt(distcarre)
+print(points_inter)
 
-Lsonde1 = []
-Lsonde2 = []
-Lsonde3 = []
+# Interpolation
 
-for k in range(len(entree)):
-    d1 = distance_euclidienne(entree[k], sonde1)
-    d2 = distance_euclidienne(entree[k], sonde2)
-    d3 = distance_euclidienne(entree[k], sonde3)
-    Lsonde1.append(d1)
-    Lsonde2.append(d2)
-    Lsonde3.append(d3)
+S = []  # S[i] donnera le point interpolé représentant la sonde i
 
-Lsonde1.sort()
-Lsonde2.sort()
-Lsonde3.sort()
-
-
-points_1 = [Lsonde1[i] for i in range(4)]
-points_2 = [Lsonde2[i] for i in range(4)]
-points_3 = [Lsonde3[i] for i in range(4)]
-print(points_1, points_2, points_3)
+for i in range(3):
+    point = np.array([0., 0.])
+    s = 0
+    for j in range(4):
+        point += points_inter[i][j][0]*points_inter[i][j][1]
+        s += points_inter[i][j][1]
+    point = point/s
+    S.append(point)
