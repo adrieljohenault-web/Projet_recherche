@@ -1,23 +1,10 @@
 import numpy as np
 import os
+from variables_globales import *
 
-### TO-D0 ###
-# Normaliser pour les distances euclidiennes
-
-# VARIABLES GLOBALES
-
-n_valeurs_calc = 1761  # nombre de valeur d'entrée et de sortie qui ont été calculées par Delft3D (=len(entree))
-n_interpolation = 5  # nombre de cas regardés pour l'interpolation
-n_sortie = 36225  # nombre de lignes d'un fichier de sortie
-
-# ouvrir les 3 blocks et les assembler dans entree de Delft3D
-
-#il s'agit des chemins associés au dossier Lookup_table_Vougot
-path_clem = "/Users/clementcotte-grubis/office/PRECH3/repo_PRECH3/Lookup_table_Vougot"
-path_adriel = "/Users/adrielhenault/Documents/ECOLE DES PONTS/1A/TRAVAIL/SCIENTIFIQUE/PARCOURS RECHERCHE/Fichier_d_encadrement/Lookup_table_Vougot"
 
 with open(
-    os.path.join(path_clem, "Delft3D_entrees", "allblocks_Vougot.txt"),
+    os.path.join(path_adriel, "Delft3D_entrees", "allblocks_Vougot.txt"),
     "r",
 ) as file:
     lines = file.readlines()[1:]
@@ -44,7 +31,7 @@ def nombre_fichier_sortie(n):
 def sortie_fichier(i: int) -> list:
     LSH = []
     ch = os.path.join(
-        path_clem,
+        path_adriel,
         "Delft3D_sorties_gamma04",
         "SH",
         f"D3D_res{nombre_fichier_sortie(i)}_SH.txt",
@@ -57,7 +44,7 @@ def sortie_fichier(i: int) -> list:
 
     LSL = []
     ch = os.path.join(
-        path_clem,
+        path_adriel,
         "Delft3D_sorties_gamma04",
         "SL",
         f"D3D_res{nombre_fichier_sortie(i)}_SL.txt",
@@ -151,5 +138,7 @@ def OS2NS(Hs: float, Tp: float, Dir: float, Pos: float, coef_maree: float, maree
     if maree : return coef_maree*sortieL + (1-coef_maree)*sortieH
     return sortieL, sortieH
 
+
+"""
 a = OS2NS(0.26, 3, 280, 40, .5, True)
-print(a)
+print(a)"""

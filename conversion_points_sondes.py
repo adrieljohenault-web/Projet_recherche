@@ -4,6 +4,10 @@ import numpy as np
 
 ### Choix des 4 points les plus proches des sondes pour réaliser une interpolation linéaire et choisir un point moyen qui les représentera. ###
 
+###TO DO###
+# Il faut interpoler les résultats de OS2NS ET le faire dans le fichier verification, et non interpoler les quatre points.
+
+
 # Création des poids pour l'interpolation
 
 d_sonde = [[0. for _ in range(n_sortie)] for _ in range(3)]
@@ -24,7 +28,7 @@ for i in range(4):
 
 print(points_inter)
 
-# Interpolation
+# Interpolation PAS BON mais à garder pour l'inspi
 
 S = []  # S[i] donnera le point interpolé représentant la sonde i
 
