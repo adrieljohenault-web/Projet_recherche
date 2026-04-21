@@ -66,29 +66,28 @@ def distance_euclidienne(q1: list, q2: list):
     return np.sqrt(distcarre)
 
 
-def OS2NS(Hs: float, Tp: float, Dir: float, Pos: float, coef_maree: float, maree: bool) -> list:
+def OS2NS(Hs: float, Tp: float, Dir: float, coef_maree: float, maree: bool) -> list:
     """Fonction de transfert en tant que telle : réalise l'interpolation qui permet d'obtenir les condtitions de déferlement. Retourne la matrice des conditions de déferlement en chaque point.
     Le paramètre coef_maree est un coefficient entre 0 et 1 permettant de tenir compte de la dépendance linéaire des conditions de sortie en fonction de la maree.
     Si maree est réglé sur True, alors la marée sera prise en compte et une seule valeur correspondante sera retournée. Dans le cas contraire, la fonction retourne deux valeurs de sortie correspondant respectivement aux marées basse et haute."""
 
     # Parcourir l'ensemble des données d'entrées et prendre les 5 plus petites distances euclidiennes à la situation en argument
 
-    arg = [Hs, Tp, Dir, Pos]
+    arg = [Hs, Tp, Dir]
 
     # Normalisation de argument et de l'entrée pour application des poids à l'interpolation plus tard
 
     mean_Hs = np.average(np.array([entree[i][0] for i in range(n_valeurs_calc)]))
     mean_Tp = np.average(np.array([entree[i][1] for i in range(n_valeurs_calc)]))
     mean_Dir = np.average(np.array([entree[i][2] for i in range(n_valeurs_calc)]))
-    mean_Pos = np.average(np.array([entree[i][3] for i in range(n_valeurs_calc)]))
 
-    means = [mean_Hs, mean_Tp, mean_Dir, mean_Pos]
+    means = [mean_Hs, mean_Tp, mean_Dir]
 
-    arg_norm = np.array([Hs/mean_Hs, Tp/mean_Tp, Dir/mean_Dir, Pos/mean_Pos])
+    arg_norm = np.array([Hs/mean_Hs, Tp/mean_Tp, Dir/mean_Dir])
 
     entree_norm = np.array([[0 for _ in range(4)] for _ in range(n_valeurs_calc)])
     for i in range(n_valeurs_calc):
-        for j in range(4):
+        for j in range(3):
             entree_norm[i][j] = entree[i][j]/means[j]
 
     five_closest = [[], [], [], [], []]
@@ -139,6 +138,6 @@ def OS2NS(Hs: float, Tp: float, Dir: float, Pos: float, coef_maree: float, maree
     return sortieL, sortieH
 
 
-"""
-a = OS2NS(0.26, 3, 280, 40, .5, True)
-print(a)"""
+
+#a = OS2NS(0.26, 3, 280, .5, False)
+#print(a)

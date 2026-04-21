@@ -44,7 +44,6 @@ def generer_carte_bathymetrique_recherche(data_list):
     # 4. Filtrage strict des NaNs (-999)
     # On exclut -999 et on vérifie aussi les éventuels NaN réels (np.nan)
     mask = (z != -999) & (~np.isnan(z))
-    print(mask)
     
     x_pure = x[mask]
     y_pure = y[mask]
@@ -86,5 +85,5 @@ def generer_carte_bathymetrique_recherche(data_list):
     plt.tight_layout()
     plt.show()
 
-
-generer_carte_bathymetrique_recherche(bathy)
+"""
+generer_carte_bathymetrique_recherche(bathy)"""

@@ -154,3 +154,22 @@ for i in range(len(verif_3)):
     date = Date(verif_3[i][0], verif_3[i][1], verif_3[i][2], verif_3[i][3], verif_3[i][4])
     v3[i] = [date.__get__()]
     for j in range(5, len(verif_3[0])): v3[i].append(verif_3[i][j])
+
+with open(
+    os.path.join(path_adriel, "Vagues_forcage", "Tide_Brignogan_2009-2020_UTC_hourly.txt"),
+    "r",
+) as file:
+    lines = file.readlines()[1:]
+for i in range(len(lines)):
+    lines[i] = lines[i].split()
+
+table_maree = lines[25861:27993]
+
+for i in range(len(table_maree)):
+    for j in range(5):
+        table_maree[i][j] = int(table_maree[i][j])
+    table_maree[i][5] = float(table_maree[i][5])
+
+hauteurs = [table_maree[i][5] for i in range(len(table_maree))]
+max_h = max(hauteurs)
+min_h = min(hauteurs)
