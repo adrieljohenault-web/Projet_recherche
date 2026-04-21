@@ -59,7 +59,7 @@ def sortie_fichier(i: int) -> list:
 
 
 def distance_euclidienne(q1: list, q2: list):
-    """Calcule la distance euclidienne entre les deux array de dimenison 4 q1 et q2"""
+    """Calcule la distance euclidienne entre les deux array de même dimension q1 et q2"""
     distcarre = 0
     for k in range(len(q1)):
         distcarre += (q1[k] - q2[k]) ** 2
@@ -85,14 +85,14 @@ def OS2NS(Hs: float, Tp: float, Dir: float, coef_maree: float, maree: bool) -> l
 
     arg_norm = np.array([Hs/mean_Hs, Tp/mean_Tp, Dir/mean_Dir])
 
-    entree_norm = np.array([[0 for _ in range(4)] for _ in range(n_valeurs_calc)])
+    entree_norm = np.array([[0 for _ in range(3)] for _ in range(n_valeurs_calc)])
     for i in range(n_valeurs_calc):
         for j in range(3):
             entree_norm[i][j] = entree[i][j]/means[j]
 
     five_closest = [[], [], [], [], []]
 
-    memo_norm: list[float] = np.array([0.] * n_valeurs_calc)
+    memo_norm: list[float] = np.array([0. for _ in range(n_valeurs_calc)])
     for i in range(n_valeurs_calc):
         memo_norm[i] = distance_euclidienne(arg_norm, entree_norm[i])
 

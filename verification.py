@@ -3,6 +3,7 @@
 ###TO DO###
 
 # Il ne reste plus qu'à compléter la fonction MSE en prenant en compte le niveau d'eau.
+# Résoudre dans les problèmes d'indexations pour modele
 
 
 import numpy as np
@@ -38,7 +39,7 @@ def correspondance_maree(date: Date, table_marees = table_maree) -> float:
             x[0] == date._jour and
             x[3] == date._h):
             h = x[5]
-            return (h-min_h)/(max_h-min_h)
+            return ((h-min_h)/(max_h-min_h))
 
 def correspondance_es(sortie: list, entree: list = vin):
     """Prend pour chaque heure de la liste entree une donnée de la liste sortie la plus proche possible et supérieure à l'heure en question, et retourne une liste des indices à utiliser comme masque pour obtenir des listes de sortie qui correspondent à la liste des entrées.
@@ -77,6 +78,7 @@ n_data = len(r_data0[0])
 r_data = [np.zeros((n_data, 3)), np.zeros((n_data, 2))]
 dates = []
 
+
 for k in range(2):
     for i in range(n_data):
         for j in range(3-k):
@@ -84,13 +86,27 @@ for k in range(2):
 
 for i in range(n_data):
     dates.append(r_data0[0][i][0])
-#modele = OS2NS(, .5, True)
+
+#Problème avec les indexations des points_inter
+
+modele = []
+for i in range(n_data):
+    coef_maree = correspondance_maree(Date(dates[i][0], dates[i][1], dates[i][2], dates[i][3], dates[i][4]))
+    a = np.array([0, 0])
+    somme_distances = 0
+    for j in range(4) :
+        a+=np.array([OS2NS(r_data[0][i][0], r_data[0][i][1], r_data[0][i][2], coef_maree, True)[points_inter[1][j][0]][0], OS2NS(r_data[0][i][0], r_data[0][i][1], r_data[0][i][2], coef_maree, True)[points_inter[1][j][0]][1]])*points_inter[1][j][1]
+        somme_distances += points_inter[1][j][1]
+    a = a/somme_distances
+    modele.append(a)
+
+print(modele)
+#print(OS2NS(r_data[0][0][0], r_data[0][0][1], r_data[0][0][2], correspondance_maree(Date(dates[0][0], dates[0][1], dates[0][2], dates[0][3], dates[0][4])), True)[points_inter[0][0][0]])
+
 # Confrontation aux données obtenues grâce OS2NS par calcul de la MSE
 
 
 def MSE(modele: list, r_data: list[list, list]):
     """Prend en argument deux listes contenant chacune des données d'entrée et de sortie, et calcule la MSE."""
-
-    # 1. Importer les données de OS2NS au niveau des points concernés
 
 

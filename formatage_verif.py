@@ -163,7 +163,7 @@ with open(
 for i in range(len(lines)):
     lines[i] = lines[i].split()
 
-table_maree = lines[25861:27993]
+table_maree = lines[25859:27993]
 
 for i in range(len(table_maree)):
     for j in range(5):
