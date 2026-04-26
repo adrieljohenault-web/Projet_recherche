@@ -25,7 +25,7 @@ def compare(date1: Date, date2: Date):
 
 # Importation des données de sortie mesurées
 
-with open(os.path.join(path_adriel, "Capteurs_pression", "S1_recup_capteur-haut_2012-12-13_2013-03-12_waveStats_filt_h01.1.dat"), 'r'
+with open(os.path.join(path, "Capteurs_pression", "S1_recup_capteur-haut_2012-12-13_2013-03-12_waveStats_filt_h01.1.dat"), 'r'
 ) as file :
     lines = file.readlines()
 for i in range(len(lines)):
@@ -34,7 +34,7 @@ for i in range(len(lines)):
 verif_1 = lines
 verif_1 = verif_1[1:]
 
-with open(os.path.join(path_adriel, "Capteurs_pression", "S2_recup_capteur-bas_2012-12-13_2013-03-12_waveStats_filt_h01.1.dat"), 'r') as file :
+with open(os.path.join(path, "Capteurs_pression", "S2_recup_capteur-bas_2012-12-13_2013-03-12_waveStats_filt_h01.1.dat"), 'r') as file :
     lines = file.readlines()
 for i in range(len(lines)):
     lines[i] = lines[i].split()
@@ -42,17 +42,17 @@ for i in range(len(lines)):
 verif_2 = lines
 verif_2 = verif_2[7:-5] # Faire commencer et finir le bon jour à la bonne heure
 
-with open(os.path.join(path_adriel, "Capteurs_pression", "S3_capteur_offshore_2012-12-11_2013-03-14_waveStats_filt_h01.1.dat"), 'r') as file :
+with open(os.path.join(path, "Capteurs_pression", "S3_capteur_offshore_2012-12-11_2013-03-14_waveStats_filt_h01.1.dat"), 'r') as file :
     lines = file.readlines()
 for i in range(len(lines)):
     lines[i] = lines[i].split()
 
 verif_3 = lines
-verif_3 = verif_3[300:-311] # Faire commencer et finir le bon jour à la bonne heure
+verif_3 = verif_3[300:-311] # Faire commencer et finir le bon jour à la bonne heuref
 
 # Importation des données d'entrée mesurées
 
-with open(os.path.join(path_adriel, "Vagues_forcage", "Waves_resourcecode_138311.csv"), 'r') as file :
+with open(os.path.join(path, "Vagues_forcage", "Waves_resourcecode_138311.csv"), 'r') as file :
     lines = file.readlines()
 for i in range(len(lines)):
     lines[i] = lines[i].split()
@@ -159,10 +159,17 @@ for i in range(len(verif_3)):
     v3[i] = [date.__get__()]
     for j in range(5, len(verif_3[0])): v3[i].append(verif_3[i][j])
 
+vin3 = [[] for _ in range(len(vin2))]
+
+for i in range(len(vin2)):
+    date = Date(vin2[i][0], vin2[i][1], vin2[i][2], vin2[i][3], vin2[i][4])
+    vin3[i] = [date.__get__()]
+    for j in range(5, len(vin2[0])): vin3[i].append(vin2[i][j])
+
 # Création d'une table des marées
 
 with open(
-    os.path.join(path_adriel, "Vagues_forcage", "Tide_Brignogan_2009-2020_UTC_hourly.txt"),
+    os.path.join(path, "Vagues_forcage", "Tide_Brignogan_2009-2020_UTC_hourly.txt"),
     "r",
 ) as file:
     lines = file.readlines()[1:]
@@ -177,5 +184,29 @@ for i in range(len(table_maree)):
     table_maree[i][5] = float(table_maree[i][5])
 
 hauteurs = [table_maree[i][5] for i in range(len(table_maree))]
-max_h = max(hauteurs)
-min_h = min(hauteurs)
+
+def get_extremum(hauteurs: list):
+    hauteurs.sort()
+    ind_5percent = int(np.ceil(len(hauteurs) * 0.05))
+    high = np.mean(hauteurs[-ind_5percent:])
+    low = np.mean(hauteurs[:ind_5percent])
+    return high, low
+
+
+max_h, min_h = get_extremum(hauteurs)
+
+def get_coef_marree(h:float):
+    coef = ( h - min_h ) / ( max_h - min_h )
+    if coef > 1 :
+        return 1
+    elif coef < 0 : 
+        return 0
+    else :
+        return coef
+
+dates = [line[0] for line in vin3]
+#je ne suis pas sur d'avori compris ta troncature précédente, je propose la troncature de vin2 qui commence à 14h le 13/12/2012
+vin3 = vin3[14:]
+
+
+#def get_closest_date(v: list):             # l'objectif est de passer les données de v1,bv2,v3 en données qui repose sur des heures. Pour cela on fait une moyenne des valeurs les plus proches de la donnée à l'herue pile
