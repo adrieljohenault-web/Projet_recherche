@@ -76,7 +76,6 @@ nears = r_data[1]
 for i in range(n_data):
     dates.append(r_data0[0][i][0])
 
-print(n_data)
 # On se préoccupe de la sonde n°2
 
 # Création de la liste d'entrée & passer en argument de la fonction MSE
@@ -84,7 +83,7 @@ print(n_data)
 modeles = np.zeros((3, n_data, 2)) # Hs et Tp pour chaque date, pour chaque sonde.
 
 for j in range(3):
-    for i in range(130): # ~3h, n_data prendrait 42 h...
+    for i in range(260): # ~6h, n_data prendrait 42 h...
         coef_maree_i = correspondance_maree(Date(dates[i][0], dates[i][1], dates[i][2], dates[i][3], dates[i][4]))
         Hs_i = offs[i][0]
         Tp_i = offs[i][1]
