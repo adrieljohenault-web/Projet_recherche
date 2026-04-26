@@ -15,22 +15,6 @@ from Schéma_bathymétrie import bathy
 
 # Choix des 4 points les plus proches de chaque sonde pour réaliser une interpolation linéaire et choisir un point moyen qui les représentera.
 
-d_sonde = [[0. for _ in range(n_sortie)] for _ in range(3)]
-
-for k in range(n_sortie):
-    for i in range(3):
-        d_sonde[i][k] = distance_euclidienne([bathy[k][0], bathy[k][1]], sondes[i])
-
-points_inter = [[[] for _ in range(4)] for _ in range(3)]
-
-for i in range(3):
-    for j in range(4):
-        closest_index = np.argmin(d_sonde[i])
-        closest_distance = np.min(d_sonde[i])
-        #closest_point = np.array([bathy[closest_index][0], bathy[closest_index][1]])
-        points_inter[i][j] = [closest_index, closest_distance]
-        d_sonde[i][closest_index] = 10**10
-
 
 def correspondance_maree(date: Date, table_marees = table_maree) -> float:
     for x in table_marees:
@@ -75,38 +59,53 @@ def correspondance_es(sortie: list, entree: list = vin):
 r_data0 = correspondance_es(v2)
 n_data = len(r_data0[0])
 
-r_data = [np.zeros((n_data, 3)), np.zeros((n_data, 2))]
-dates = []
+r_data = [np.zeros((n_data, 3)), np.zeros((n_data, 2))] # r_data0 sans les dates qui vont partir dans la liste dates
 
+# Création de la liste des dates telle que dates[i] corresponde à la donnée i de n'importe quelle séries de données réelles
+
+dates = []
 
 for k in range(2):
     for i in range(n_data):
         for j in range(3-k):
             r_data[k][i][j] = r_data0[k][i][j+1]
 
+offs = r_data[0]
+nears = r_data[1]
+
 for i in range(n_data):
     dates.append(r_data0[0][i][0])
 
-#Problème avec les indexations des points_inter
+print(n_data)
+# On se préoccupe de la sonde n°2
 
-modele = []
-for i in range(n_data):
-    coef_maree = correspondance_maree(Date(dates[i][0], dates[i][1], dates[i][2], dates[i][3], dates[i][4]))
-    a = np.array([0, 0])
-    somme_distances = 0
-    for j in range(4) :
-        a+=np.array([OS2NS(r_data[0][i][0], r_data[0][i][1], r_data[0][i][2], coef_maree, True)[points_inter[1][j][0]][0], OS2NS(r_data[0][i][0], r_data[0][i][1], r_data[0][i][2], coef_maree, True)[points_inter[1][j][0]][1]])*points_inter[1][j][1]
-        somme_distances += points_inter[1][j][1]
-    a = a/somme_distances
-    modele.append(a)
+# Création de la liste d'entrée & passer en argument de la fonction MSE
 
-print(modele)
-#print(OS2NS(r_data[0][0][0], r_data[0][0][1], r_data[0][0][2], correspondance_maree(Date(dates[0][0], dates[0][1], dates[0][2], dates[0][3], dates[0][4])), True)[points_inter[0][0][0]])
+modeles = np.zeros((3, n_data, 2)) # Hs et Tp pour chaque date, pour chaque sonde.
+
+for j in range(3):
+    for i in range(130): # ~3h, n_data prendrait 42 h...
+        coef_maree_i = correspondance_maree(Date(dates[i][0], dates[i][1], dates[i][2], dates[i][3], dates[i][4]))
+        Hs_i = offs[i][0]
+        Tp_i = offs[i][1]
+        Dir_i = offs[i][2]
+        for k in range(4):
+            pt_k = points_inter[j][k][0]
+            dist_k = points_inter[j][k][1]
+            Hs_ptk = OS2NS(Hs_i, Tp_i, Dir_i, coef_maree_i)[pt_k][0]
+            Tp_ptk = OS2NS(Hs_i, Tp_i, Dir_i, coef_maree_i)[pt_k][1]
+            modeles[j][i] += np.array([Hs_ptk, Tp_ptk])*dist_k
+        modeles[j][i] = modeles[j][i]/somme_dist[j]
+    
+print(modeles)
+
 
 # Confrontation aux données obtenues grâce OS2NS par calcul de la MSE
 
 
 def MSE(modele: list, r_data: list[list, list]):
     """Prend en argument deux listes contenant chacune des données d'entrée et de sortie, et calcule la MSE."""
+
+
 
 

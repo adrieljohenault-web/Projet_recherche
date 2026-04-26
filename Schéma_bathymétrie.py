@@ -3,17 +3,6 @@ import numpy as np
 import os
 from variables_globales import *
 
-with open(
-    os.path.join(path_adriel, "Delft3D_bathy", "G2_Depth.txt"),
-    "r",
-) as file:
-    lines = file.readlines()
-for i in range(len(lines)):
-    lines[i] = lines[i].split()
-
-bathy = [[float(lines[i][j]) for j in range(3)] for i in range(n_sortie)]
-
-
 def generer_carte_bathymetrique_recherche(data_list):
     """
     Représentation 2D stricte des points de données.
@@ -85,5 +74,5 @@ def generer_carte_bathymetrique_recherche(data_list):
     plt.tight_layout()
     plt.show()
 
-"""
-generer_carte_bathymetrique_recherche(bathy)"""
+
+# generer_carte_bathymetrique_recherche(bathy)

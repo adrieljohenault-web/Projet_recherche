@@ -58,15 +58,7 @@ def sortie_fichier(i: int) -> list:
     return np.array(LSL), np.array(LSH)
 
 
-def distance_euclidienne(q1: list, q2: list):
-    """Calcule la distance euclidienne entre les deux array de même dimension q1 et q2"""
-    distcarre = 0
-    for k in range(len(q1)):
-        distcarre += (q1[k] - q2[k]) ** 2
-    return np.sqrt(distcarre)
-
-
-def OS2NS(Hs: float, Tp: float, Dir: float, coef_maree: float, maree: bool) -> list:
+def OS2NS(Hs: float, Tp: float, Dir: float, coef_maree: float, maree: bool = True) -> list:
     """Fonction de transfert en tant que telle : réalise l'interpolation qui permet d'obtenir les condtitions de déferlement. Retourne la matrice des conditions de déferlement en chaque point.
     Le paramètre coef_maree est un coefficient entre 0 et 1 permettant de tenir compte de la dépendance linéaire des conditions de sortie en fonction de la maree.
     Si maree est réglé sur True, alors la marée sera prise en compte et une seule valeur correspondante sera retournée. Dans le cas contraire, la fonction retourne deux valeurs de sortie correspondant respectivement aux marées basse et haute."""
@@ -139,5 +131,5 @@ def OS2NS(Hs: float, Tp: float, Dir: float, coef_maree: float, maree: bool) -> l
 
 
 
-#a = OS2NS(0.26, 3, 280, .5, False)
-#print(a)
+# a = OS2NS(0.26, 3, 280, .5, True)
+# print(a)

@@ -127,12 +127,16 @@ str_to_num(verif_2)
 str_to_num(verif_3)
 str_to_num(vin2)
 
+# Données mesurées au large ; formatage définitif
+
 vin = [[] for _ in range(len(vin1))]
 
 for i in range(len(vin2)):
     date = Date(vin2[i][0], vin2[i][1], vin2[i][2], vin2[i][3], vin2[i][4])
     vin[i] = [date.__get__()]
     for j in range(5, len(vin2[0])): vin[i].append(vin2[i][j])
+
+# Données mesurées pour les trois sondes ; formatage définitif
 
 v1 = [[] for _ in range(len(verif_1))]
 
@@ -154,6 +158,8 @@ for i in range(len(verif_3)):
     date = Date(verif_3[i][0], verif_3[i][1], verif_3[i][2], verif_3[i][3], verif_3[i][4])
     v3[i] = [date.__get__()]
     for j in range(5, len(verif_3[0])): v3[i].append(verif_3[i][j])
+
+# Création d'une table des marées
 
 with open(
     os.path.join(path_adriel, "Vagues_forcage", "Tide_Brignogan_2009-2020_UTC_hourly.txt"),
