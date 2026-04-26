@@ -4,7 +4,7 @@ from variables_globales import *
 
 
 with open(
-    os.path.join(path_adriel, "Delft3D_entrees", "allblocks_Vougot.txt"),
+    os.path.join(path, "Delft3D_entrees", "allblocks_Vougot.txt"),
     "r",
 ) as file:
     lines = file.readlines()[1:]
@@ -31,7 +31,7 @@ def nombre_fichier_sortie(n):
 def sortie_fichier(i: int) -> list:
     LSH = []
     ch = os.path.join(
-        path_adriel,
+        path,
         "Delft3D_sorties_gamma04",
         "SH",
         f"D3D_res{nombre_fichier_sortie(i)}_SH.txt",
@@ -44,7 +44,7 @@ def sortie_fichier(i: int) -> list:
 
     LSL = []
     ch = os.path.join(
-        path_adriel,
+        path,
         "Delft3D_sorties_gamma04",
         "SL",
         f"D3D_res{nombre_fichier_sortie(i)}_SL.txt",
@@ -113,17 +113,17 @@ def OS2NS(Hs: float, Tp: float, Dir: float, coef_maree: float, maree: bool = Tru
     for i in range(n_sortie):
         for j in range(8):
             for h in range(n_interpolation):
-                sortieL[i][j] += sortie_low[h][i][j] * five_closest[h][0]
+                sortieL[i][j] += sortie_low[h][i][j] * (1/five_closest[h][0])
             sortieL[i][j] = sortieL[i][j] / np.sum(
-                [five_closest[h][0] for h in range(n_interpolation)]
+                [1/five_closest[h][0] for h in range(n_interpolation)]
             )
     
     for i in range(n_sortie):
         for j in range(8):
             for h in range(n_interpolation):
-                sortieH[i][j] += sortie_high[h][i][j] * five_closest[h][0]
+                sortieH[i][j] += sortie_high[h][i][j] * (1/five_closest[h][0])
             sortieH[i][j] = sortieH[i][j] / np.sum(
-                [five_closest[h][0] for h in range(n_interpolation)]
+                [1/five_closest[h][0] for h in range(n_interpolation)]
             )
             
     if maree : return coef_maree*sortieL + (1-coef_maree)*sortieH
@@ -131,5 +131,5 @@ def OS2NS(Hs: float, Tp: float, Dir: float, coef_maree: float, maree: bool = Tru
 
 
 
-# a = OS2NS(0.26, 3, 280, .5, True)
-# print(a)
+a = OS2NS(0.26, 3, 280, .5, True)
+print(a)

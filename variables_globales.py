@@ -10,6 +10,7 @@ n_sortie = 36225  # nombre de lignes d'un fichier de sortie
 # Il s'agit des chemins associés au dossier Lookup_table_Vougot
 path_clem = "/Users/clementcotte-grubis/office/PRECH3/repo_PRECH3/Lookup_table_Vougot"
 path_adriel = "/Users/adrielhenault/Documents/ECOLE DES PONTS/1A/TRAVAIL/SCIENTIFIQUE/PARCOURS RECHERCHE/Fichier_d_encadrement/Lookup_table_Vougot"
+path = path_clem
 
 # Emplacements des sondes
 
@@ -29,7 +30,7 @@ def distance_euclidienne(q1: list, q2: list):
 # Bathymétrie de la zone G2
 
 with open(
-    os.path.join(path_adriel, "Delft3D_bathy", "G2_Depth.txt"),
+    os.path.join(path, "Delft3D_bathy", "G2_Depth.txt"),
     "r",
 ) as file:
     lines = file.readlines()
