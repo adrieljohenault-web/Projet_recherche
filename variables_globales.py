@@ -60,3 +60,11 @@ for i in range(3):
 # Somme des distances des 4 points pour chaque sonde
 
 somme_dist = [sum([points_inter[i][j][1] for j in range(4)]) for i in range(3)]
+inv_sum_dist = [sum([1/points_inter[i][j][1] for j in range(4)]) for i in range(3)]
+
+#calcul des poids associés à la distance 
+points_and_weights = [
+    [[points_inter[j][i][0], (1/points_inter[j][i][1]) / inv_sum_dist[j]] 
+     for i in range(4)] 
+    for j in range(3)
+]

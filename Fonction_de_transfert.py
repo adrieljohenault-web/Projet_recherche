@@ -131,5 +131,5 @@ def OS2NS(Hs: float, Tp: float, Dir: float, coef_maree: float, maree: bool = Tru
 
 
 
-a = OS2NS(0.26, 3, 280, .5, True)
-print(a)
+#a = OS2NS(0.26, 3, 280, .5, True)
+#print(a)

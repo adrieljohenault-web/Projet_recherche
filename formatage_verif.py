@@ -3,6 +3,7 @@
 import numpy as np
 import os
 from variables_globales import *
+import Fonction_de_transfert
 
 class Date():
     def __init__(self, annee: int, mois: int, jour: int, h: int, m: int):
@@ -59,7 +60,7 @@ for i in range(len(lines)):
 
 verif_in = lines
 
-verif_in = verif_in[25850:27996] # Troncature de verif_in qui va de 2009 à 2020
+verif_in = verif_in[25863:27996] # Troncature de verif_in qui va de 2009 à 2020
 
 # Formatage de verif_in
 
@@ -74,6 +75,13 @@ for donnees in verif_in:
     vin0.append([donnees[0][j] for j in range(3)]+[donnees[1][0][j] for j in range(2)]+[donnees[1][j] for j in range(1, 14)])
 
 vin0 = np.array(vin0)
+
+# Extraction de dpt
+vin_dpt = []
+for i in range(len(vin0)):
+    date = Date(int(vin0[i][0]), int(vin0[i][1]), int(vin0[i][2]), 
+                int(vin0[i][3]), int(vin0[i][4]))
+    vin_dpt.append([date.__get__(), float(vin0[i][5])])
 
 # Retrait des données inutiles dans les listes d'entrée
 
@@ -193,10 +201,9 @@ def get_extremum(hauteurs: list):
     low = np.mean(hauteurs[:ind_5percent])
     return high, low
 
+dpt_max,dpt_min = get_extremum([line[1] for line in vin_dpt])
 
-max_h, min_h = get_extremum(hauteurs)
-
-def get_coef_marree(h:float):
+def get_coef_marree(h:float,max_h,min_h):
     coef = ( h - min_h ) / ( max_h - min_h )
     if coef > 1 :
         return 1
@@ -207,13 +214,11 @@ def get_coef_marree(h:float):
 
 dates = [line[0] for line in vin3]
 
-#je ne suis pas sur d'avori compris ta troncature précédente, je propose la troncature de vin2 qui commence à 14h le 13/12/2012
-vin3 = vin3[13:]
 #print(vin3[0], vin3[-1])
 #print(v1[0], v1[-1])
 #print(v2[0], v2[-1])
 #print(v3[0], v3[-1])
-
+#[2012, 12, 13, 13, 0], 2.06, 16.39344262295082, 283.2]
 
 def get_closest_value(date1: list, list_condition_au_large : list):
     #date1 correspond à [annee, mois, jour, heure, minute], tandis que dates correspond à dates
@@ -239,3 +244,45 @@ def get_closest_value(date1: list, list_condition_au_large : list):
                 return val 
     return trouver
 
+def verif_modele_sonde(v_sonde:list,v_au_large:list, num_sonde:int, list_dpt:list):
+    #structure : v_sonde = [[annee, mois, jour, heure, min], Hs,Tp], v_large = [[annee, mois, jour, heure, min], Hs,Tp,dir]
+    #entree de la fonction de transfert : Hs: float, Tp: float, Dir: float, coef_maree: float, maree: bool = True, sortie : coef_maree*sortieL + (1-coef_maree)*sortieH
+    #liste de sortie de la fonction de transfert   Hs[m]       Tp[s]       Tm01[s]    Dp[degN]    Dm[degN]    DSpr[deg]     WD[m]      Qb[-]
+    #position des sondes points_and_weights[i][j] → [indice_dans_maillage, poidsij] pour la sonde i, point voisin j
+
+    Lerreur = [[v_sonde[0],0,0] for _ in range(len(v_sonde))]               # format : [[annee, mois,jour,heure,min], hs_err,Tp_err]
+
+    for k in range(len(v_sonde)):
+        #obtention données fonction de transfert
+        date1 = v_sonde[k][0]
+        val_large = get_closest_value(date1, v_au_large)
+        Hs = val_large[0]
+        Tp = val_large[1]
+        Dir = val_large[2]
+
+
+        coef = get_coef_marree(list_dpt[k][1], dpt_max,dpt_min)                                                # je ne suis pas sur que ce soit dpt
+        val_fonction_transfert_grid = Fonction_de_transfert.OS2NS(Hs, Tp, Dir, coef, True)
+        Hs_val_fonction_transfert = (val_fonction_transfert_grid[points_and_weights[num_sonde][0][0]][0]*points_and_weights[num_sonde][0][1]
+                                     + val_fonction_transfert_grid[points_and_weights[num_sonde][1][0]][0]*points_and_weights[num_sonde][1][1]
+                                     + val_fonction_transfert_grid[points_and_weights[num_sonde][2][0]][0]*points_and_weights[num_sonde][2][1]
+                                     + val_fonction_transfert_grid[points_and_weights[num_sonde][3][0]][0]*points_and_weights[num_sonde][3][1])
+        
+        Tp_val_fonction_transfert = (val_fonction_transfert_grid[points_and_weights[num_sonde][0][0]][1]*points_and_weights[num_sonde][0][1]
+                                     + val_fonction_transfert_grid[points_and_weights[num_sonde][1][0]][1]*points_and_weights[num_sonde][1][1]
+                                     + val_fonction_transfert_grid[points_and_weights[num_sonde][2][0]][1]*points_and_weights[num_sonde][2][1]
+                                     + val_fonction_transfert_grid[points_and_weights[num_sonde][3][0]][1]*points_and_weights[num_sonde][3][1])
+        
+        Hs_sonde = v_sonde[k][1]
+        Tp_sonde = v_sonde[k][2]
+
+        Hs_err = Hs_sonde - Hs_val_fonction_transfert
+        Tp_err = Tp_sonde - Tp_val_fonction_transfert
+
+        Lerreur[k][1] = Hs_err
+        Lerreur[k][2] = Tp_err
+        print(k/len(v_sonde))
+
+    return Lerreur
+
+verif_modele_sonde(v1,vin3,1,vin_dpt)

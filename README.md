@@ -79,3 +79,9 @@ def verif_345(v,vin3):
             print(date1)
             count +=1
     return count 
+
+
+
+
+
+Pour la prochaine fois : Au lieu de calculer tout les points pour la fonction de tansfert, on la modifie pour calculer que les points qui nous interesse vraiment (ceux de points_and_weights), par ce que je pense que c'est ca qui prend du temps
