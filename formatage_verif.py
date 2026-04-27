@@ -59,7 +59,7 @@ for i in range(len(lines)):
 
 verif_in = lines
 
-verif_in = verif_in[25850:27995] # Troncature de verif_in qui va de 2009 à 2020
+verif_in = verif_in[25850:27996] # Troncature de verif_in qui va de 2009 à 2020
 
 # Formatage de verif_in
 
@@ -186,6 +186,7 @@ for i in range(len(table_maree)):
 hauteurs = [table_maree[i][5] for i in range(len(table_maree))]
 
 def get_extremum(hauteurs: list):
+    #on définit le high (le low) comme les 5 pourcent des valeurs les plus hautes (les plus basses)
     hauteurs.sort()
     ind_5percent = int(np.ceil(len(hauteurs) * 0.05))
     high = np.mean(hauteurs[-ind_5percent:])
@@ -205,8 +206,36 @@ def get_coef_marree(h:float):
         return coef
 
 dates = [line[0] for line in vin3]
+
 #je ne suis pas sur d'avori compris ta troncature précédente, je propose la troncature de vin2 qui commence à 14h le 13/12/2012
-vin3 = vin3[14:]
+vin3 = vin3[13:]
+#print(vin3[0], vin3[-1])
+#print(v1[0], v1[-1])
+#print(v2[0], v2[-1])
+#print(v3[0], v3[-1])
 
 
-#def get_closest_date(v: list):             # l'objectif est de passer les données de v1,bv2,v3 en données qui repose sur des heures. Pour cela on fait une moyenne des valeurs les plus proches de la donnée à l'herue pile
+def get_closest_value(date1: list, list_condition_au_large : list):
+    #date1 correspond à [annee, mois, jour, heure, minute], tandis que dates correspond à dates
+    #le but de cette fonction est de trouver les poids et les indices qui s'approchent le plus de date1 dans dates (on se limite au 2 plus proche)
+    #l'existence de données à moins d'1 heure dans la liste dates est donné par la 2ème fonction dates_verif() du README
+
+    dates = [line[0] for line in list_condition_au_large]
+
+    trouver = False
+    for k in range(len(dates)-1):
+        if dates[k][0:4]==date1[0:4]:
+                trouver = True 
+
+                min = date1[-1]
+                weight_moins = (60-min)/60
+                weight_plus = min/60
+
+                
+                val = [list_condition_au_large[k][1]*weight_moins + list_condition_au_large[k+1][1]*weight_plus,
+                       list_condition_au_large[k][2]*weight_moins + list_condition_au_large[k+1][2]*weight_plus,
+                       list_condition_au_large[k][3]*weight_moins + list_condition_au_large[k+1][3]*weight_plus]
+                
+                return val 
+    return trouver
+
