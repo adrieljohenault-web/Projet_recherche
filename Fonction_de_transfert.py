@@ -129,7 +129,73 @@ def OS2NS(Hs: float, Tp: float, Dir: float, coef_maree: float, maree: bool = Tru
     if maree : return coef_maree*sortieL + (1-coef_maree)*sortieH
     return sortieL, sortieH
 
+def OS2NS_per_point(point: int ,Hs: float, Tp: float, Dir: float, coef_maree: float, maree: bool = True) -> list:
+    """Fonction de transfert en tant que telle : réalise l'interpolation qui permet d'obtenir les condtitions de déferlement. Retourne la matrice des conditions de déferlement en chaque point.
+    Le paramètre coef_maree est un coefficient entre 0 et 1 permettant de tenir compte de la dépendance linéaire des conditions de sortie en fonction de la maree.
+    Si maree est réglé sur True, alors la marée sera prise en compte et une seule valeur correspondante sera retournée. Dans le cas contraire, la fonction retourne deux valeurs de sortie correspondant respectivement aux marées basse et haute."""
+
+    # point correspond à l'indice dans le maillage Delft3D
+    # Parcourir l'ensemble des données d'entrées et prendre les 5 plus petites distances euclidiennes à la situation en argument
+
+    arg = [Hs, Tp, Dir]
+
+    # Normalisation de argument et de l'entrée pour application des poids à l'interpolation plus tard
+
+    mean_Hs = np.average(np.array([entree[i][0] for i in range(n_valeurs_calc)]))
+    mean_Tp = np.average(np.array([entree[i][1] for i in range(n_valeurs_calc)]))
+    mean_Dir = np.average(np.array([entree[i][2] for i in range(n_valeurs_calc)]))
+
+    means = [mean_Hs, mean_Tp, mean_Dir]
+
+    arg_norm = np.array([Hs/mean_Hs, Tp/mean_Tp, Dir/mean_Dir])
+
+    entree_norm = np.array([[0 for _ in range(3)] for _ in range(n_valeurs_calc)])
+    for i in range(n_valeurs_calc):
+        for j in range(3):
+            entree_norm[i][j] = entree[i][j]/means[j]
+
+    five_closest = [[], [], [], [], []]
+
+    memo_norm: list[float] = np.array([0. for _ in range(n_valeurs_calc)])
+    for i in range(n_valeurs_calc):
+        memo_norm[i] = distance_euclidienne(arg_norm, entree_norm[i])
+
+    # Faire 5 minima en enlevant la valeur minimale à chaque fois ; stocker la distance et l'indice dans le tableau five_closest
+
+    for i in range(n_interpolation):
+        closest_index = int(np.argmin(memo_norm))
+        closest_distance = float(np.min(memo_norm))
+        closest_point = [float(entree[np.argmin(memo_norm)][i]) for i in range(4)]
+        five_closest[i] = [closest_distance, closest_index, closest_point]
+        memo_norm[np.argmin(memo_norm)] = 1000000
+
+    # Arriver aux données de sortie de Delft3D
+
+    # sortie_low = [[tableau des conditions suivantes en chaque point du maillage] pour chaque condition d'entrée des five_closest] --> Hs, Tp, Tm01, Dp, Dm, DSpr, WD, Qb
+    # sortie_high = ...
+
+    sortie_low, sortie_high = [
+        sortie_fichier(five_closest[i][1])[0] for i in range(n_interpolation)
+    ], [sortie_fichier(five_closest[i][1])[1] for i in range(n_interpolation)]
+
+    # Faire l'interpolation et retourner les valeurs finales
+
+    sortieL, sortieH = np.array([[0.] * 8 for _ in range(n_sortie)]), np.array([[0.] * 8 for _ in range(n_sortie)])
 
 
-#a = OS2NS(0.26, 3, 280, .5, True)
-#print(a)
+    for j in range(8):
+        for h in range(n_interpolation):
+            sortieL[point][j] += sortie_low[h][point][j] * (1/five_closest[h][0])
+        sortieL[point][j] = sortieL[point][j] / np.sum(
+            [1/five_closest[h][0] for h in range(n_interpolation)]
+        )
+    
+    for j in range(8):
+        for h in range(n_interpolation):
+            sortieH[point][j] += sortie_high[h][point][j] * (1/five_closest[h][0])
+        sortieH[point][j] = sortieH[point][j] / np.sum(
+            [1/five_closest[h][0] for h in range(n_interpolation)]
+        )
+            
+    if maree : return coef_maree*sortieL + (1-coef_maree)*sortieH
+    return sortieL, sortieH
