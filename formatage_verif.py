@@ -4,6 +4,7 @@ import numpy as np
 import os
 from variables_globales import *
 import Fonction_de_transfert
+import csv
 
 class Date():
     def __init__(self, annee: int, mois: int, jour: int, h: int, m: int):
@@ -244,44 +245,43 @@ def get_closest_value(date1: list, list_condition_au_large : list):
                 return val 
     return trouver
 
-def verif_modele_sonde(v_sonde:list,v_au_large:list, num_sonde:int, list_dpt:list):
-    #structure : v_sonde = [[annee, mois, jour, heure, min], Hs,Tp], v_large = [[annee, mois, jour, heure, min], Hs,Tp,dir]
-    #entree de la fonction de transfert : Hs: float, Tp: float, Dir: float, coef_maree: float, maree: bool = True, sortie : coef_maree*sortieL + (1-coef_maree)*sortieH
-    #liste de sortie de la fonction de transfert   Hs[m]       Tp[s]       Tm01[s]    Dp[degN]    Dm[degN]    DSpr[deg]     WD[m]      Qb[-]
-    #position des sondes points_and_weights[i][j] → [indice_dans_maillage, poidsij] pour la sonde i, point voisin j
 
-    Lerreur = [[v_sonde[0],0,0] for _ in range(len(v_sonde))]               # format : [[annee, mois,jour,heure,min], hs_err,Tp_err]
+def verif_modele_sonde(v_sonde:list, v_au_large:list, num_sonde:int, list_dpt:list):
 
-    for k in range(len(v_sonde)):
-        #obtention données fonction de transfert
-        date1 = v_sonde[k][0]
-        val_large = get_closest_value(date1, v_au_large)
-        Hs = val_large[0]
-        Tp = val_large[1]
-        Dir = val_large[2]
+    Lerreur = [[v_sonde[0],0,0] for _ in range(len(v_sonde))]
+    list_points = [points_and_weights[num_sonde][j][0] for j in range(4)]
 
+    with open(f"sonde_{num_sonde}.csv", "w", newline="") as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(["date", "Hs_err", "Tp_err"])
 
-        coef = get_coef_marree(list_dpt[k][1], dpt_max,dpt_min)                                                # je ne suis pas sur que ce soit dpt
-        val_fonction_transfert_grid = Fonction_de_transfert.OS2NS(Hs, Tp, Dir, coef, True)
-        Hs_val_fonction_transfert = (val_fonction_transfert_grid[points_and_weights[num_sonde][0][0]][0]*points_and_weights[num_sonde][0][1]
-                                     + val_fonction_transfert_grid[points_and_weights[num_sonde][1][0]][0]*points_and_weights[num_sonde][1][1]
-                                     + val_fonction_transfert_grid[points_and_weights[num_sonde][2][0]][0]*points_and_weights[num_sonde][2][1]
-                                     + val_fonction_transfert_grid[points_and_weights[num_sonde][3][0]][0]*points_and_weights[num_sonde][3][1])
-        
-        Tp_val_fonction_transfert = (val_fonction_transfert_grid[points_and_weights[num_sonde][0][0]][1]*points_and_weights[num_sonde][0][1]
-                                     + val_fonction_transfert_grid[points_and_weights[num_sonde][1][0]][1]*points_and_weights[num_sonde][1][1]
-                                     + val_fonction_transfert_grid[points_and_weights[num_sonde][2][0]][1]*points_and_weights[num_sonde][2][1]
-                                     + val_fonction_transfert_grid[points_and_weights[num_sonde][3][0]][1]*points_and_weights[num_sonde][3][1])
-        
-        Hs_sonde = v_sonde[k][1]
-        Tp_sonde = v_sonde[k][2]
+        for k in range(len(v_sonde)):
+            date1 = v_sonde[k][0]
+            val_large = get_closest_value(date1, v_au_large)
+            Hs = val_large[0]
+            Tp = val_large[1]
+            Dir = val_large[2]
 
-        Hs_err = Hs_sonde - Hs_val_fonction_transfert
-        Tp_err = Tp_sonde - Tp_val_fonction_transfert
+            coef = get_coef_marree(list_dpt[k][1], dpt_max, dpt_min)
+            val_fonction_transfert_grid = Fonction_de_transfert.OS2NS_vectorized_per_points(Hs, Tp, Dir, coef, list_points, True)
 
-        Lerreur[k][1] = Hs_err
-        Lerreur[k][2] = Tp_err
-        print(k/len(v_sonde))
+            Hs_val_fonction_transfert = (val_fonction_transfert_grid[0][0]*points_and_weights[num_sonde][0][1]
+                                         + val_fonction_transfert_grid[1][0]*points_and_weights[num_sonde][1][1]
+                                         + val_fonction_transfert_grid[2][0]*points_and_weights[num_sonde][2][1]
+                                         + val_fonction_transfert_grid[3][0]*points_and_weights[num_sonde][3][1])
+            
+            Tp_val_fonction_transfert = (val_fonction_transfert_grid[0][1]*points_and_weights[num_sonde][0][1]
+                                         + val_fonction_transfert_grid[1][1]*points_and_weights[num_sonde][1][1]
+                                         + val_fonction_transfert_grid[2][1]*points_and_weights[num_sonde][2][1]
+                                         + val_fonction_transfert_grid[3][1]*points_and_weights[num_sonde][3][1])
+
+            Hs_sonde = v_sonde[k][1]
+            Tp_sonde = v_sonde[k][2]
+
+            Lerreur[k][1] = Hs_sonde - Hs_val_fonction_transfert
+            Lerreur[k][2] = Tp_sonde - Tp_val_fonction_transfert
+            writer.writerow([v_sonde[k][0], Lerreur[k][1], Lerreur[k][2]])
+            print(k/len(v_sonde))
 
     return Lerreur
 
