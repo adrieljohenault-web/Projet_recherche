@@ -57,6 +57,20 @@ def sortie_fichier(i: int) -> list:
 
     return np.array(LSL), np.array(LSH)
 
+# Quantités pour les normalisations
+
+mean_Hs = np.average(np.array([entree[i][0] for i in range(n_valeurs_calc)]))
+mean_Tp = np.average(np.array([entree[i][1] for i in range(n_valeurs_calc)]))
+mean_Dir = np.average(np.array([entree[i][2] for i in range(n_valeurs_calc)]))
+
+means = [mean_Hs, mean_Tp, mean_Dir]
+
+# Normalisation de l'entrée
+
+entree_norm = np.zeros((n_valeurs_calc, 3))  # dtype float64 par défaut
+for i in range(n_valeurs_calc):
+    for j in range(3):
+        entree_norm[i][j] = entree[i][j]/means[j]
 
 def OS2NS(Hs: float, Tp: float, Dir: float, coef_maree: float, maree: bool = True) -> list:
     """Fonction de transfert en tant que telle : réalise l'interpolation qui permet d'obtenir les condtitions de déferlement. Retourne la matrice des conditions de déferlement en chaque point.
@@ -69,20 +83,8 @@ def OS2NS(Hs: float, Tp: float, Dir: float, coef_maree: float, maree: bool = Tru
 
     # Normalisation de argument et de l'entrée pour application des poids à l'interpolation plus tard
 
-    mean_Hs = np.average(np.array([entree[i][0] for i in range(n_valeurs_calc)]))
-    mean_Tp = np.average(np.array([entree[i][1] for i in range(n_valeurs_calc)]))
-    mean_Dir = np.average(np.array([entree[i][2] for i in range(n_valeurs_calc)]))
-
-    means = [mean_Hs, mean_Tp, mean_Dir]
-
     arg_norm = np.array([Hs/mean_Hs, Tp/mean_Tp, Dir/mean_Dir])
-
-    #entree_norm = np.array([[0 for _ in range(3)] for _ in range(n_valeurs_calc)])
-    entree_norm = np.zeros((n_valeurs_calc, 3))  # dtype float64 par défaut
-    for i in range(n_valeurs_calc):
-        for j in range(3):
-            entree_norm[i][j] = entree[i][j]/means[j]
-
+    
     five_closest = [[], [], [], [], []]
 
     memo_norm: list[float] = np.array([0. for _ in range(n_valeurs_calc)])
@@ -211,3 +213,7 @@ def verif_transfert_funct_per_points():
             if not (b[points[i]][j]*(1-eps) <= a[i][j] <= b[points[i]][j]*(1+eps)):
                 print("aie")
             print(a[i], b[points[i]])
+
+
+def OS2NS_uni(point: int, Hs: float, Tp: float, Dir: float, coef_maree: float, maree: bool = True):
+    """Fonction de transfert optimisée qui renvoie un résultat en un seul point."""
