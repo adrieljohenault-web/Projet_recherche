@@ -285,4 +285,4 @@ def verif_modele_sonde(v_sonde:list, v_au_large:list, num_sonde:int, list_dpt:li
 
     return Lerreur
 
-verif_modele_sonde(v1,vin3,1,vin_dpt)
+#verif_modele_sonde(v1,vin3,1,vin_dpt)

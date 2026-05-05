@@ -16,5 +16,16 @@ from sklearn.tree import plot_tree
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import HistGradientBoostingClassifier
 
-from Fonction_de_transfert import entree
+from variables_globales import *
+from Fonction_de_transfert import entree, sortie_fichier
+from formatage_verif import vin3
+
+
+X_train = entree
+# y_train = np.array([sortie_fichier(i) for i in range(1,n_valeurs_calc+1)])
+# y_trainl = y_train[:,0]
+# C'est trop long autant le faire une fois et le stocker
+
+X_val = vin3
+y_val 
 
