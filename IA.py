@@ -22,6 +22,21 @@ from formatage_verif import v1, v2, v3, vin3
 
 
 X_train = entree
+
+def load_from_npz() -> tuple[np.ndarray, np.ndarray]:
+    """
+    Charge les données consolidées.
+    Retourne (SH, SL) de shape (n_valeurs_calc, n_sortie, 8).
+
+    Exemple d'usage dans IA.py :
+        from consolidate_data import load_from_npz
+        SH, SL = load_from_npz()
+        y_trainh = SH   # (n_valeurs_calc, n_sortie, 8)
+        y_trainl = SL
+    """
+    npz_path = os.path.join(path, "training_data.npz")
+    data = np.load(npz_path)
+    return data["SH"], data["SL"]
 # y_train = np.array([sortie_fichier(i) for i in range(1,n_valeurs_calc+1)])
 # y_trainl = y_train[:,0]
 # C'est trop long autant le faire une fois et le stocker
