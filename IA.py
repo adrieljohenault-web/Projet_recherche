@@ -13,7 +13,7 @@ from sklearn.pipeline import make_pipeline
 from sklearn.inspection import permutation_importance
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.tree import plot_tree
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.ensemble import HistGradientBoostingClassifier
 
 from variables_globales import *
@@ -39,9 +39,14 @@ def load_from_npz() -> tuple[np.ndarray, np.ndarray]:
     return data["SH"], data["SL"]
 
 ytrainh,ytrainl = load_from_npz()
-y_trainh = ytrainh[:,:2]
-y_trainl = ytrainl[:,:2]
 
+y_trainh = ytrainh[:,:,:2]
+y_trainl = ytrainl[:,:,:2]
+
+# Utilise -1 pour que NumPy calcule automatiquement la dimension finale (n_sortie * 2)
+y_trainh64 = y_trainh.reshape(y_trainh.shape[0], -1)
+
+"""
 X_val = np.array([[vin3[i][j] for j in range(1, 4)] for i in range(len(vin3))])
 y_val1 = np.array([[v1[i][j] for j in range(1, 3)] for i in range(len(v1))]) # point de la sonde 1
 y_val2 = np.array([[v2[i][j] for j in range(1, 3)] for i in range(len(v2))]) # point de la sonde 2
@@ -49,7 +54,7 @@ y_val3 = np.array([[v3[i][j] for j in range(1, 3)] for i in range(len(v3))]) # p
 
 modeleh = make_pipeline(
     StandardScaler(),
-    LogisticRegression(
+    RandomForestRegressor(
         max_depth = 200,
         random_state= SEED,
         n_jobs= -1
@@ -57,3 +62,4 @@ modeleh = make_pipeline(
 )
 
 modeleh.fit(X_train, ytrainh)
+print(modeleh.predict(X_train[0]))"""
