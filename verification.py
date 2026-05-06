@@ -91,8 +91,8 @@ for j in range(3):
         for k in range(4):
             pt_k = points_inter[j][k][0]
             dist_k = points_inter[j][k][1]
-            Hs_ptk = OS2NS(Hs_i, Tp_i, Dir_i, coef_maree_i)[pt_k][0]
-            Tp_ptk = OS2NS(Hs_i, Tp_i, Dir_i, coef_maree_i)[pt_k][1]
+            Hs_ptk = OS2NS(Hs_i, Tp_i, Dir_i, coef_maree_i)[pt_k][0] # OS2NS_uni(pt_k, Hs_i, ...)[0]
+            Tp_ptk = OS2NS(Hs_i, Tp_i, Dir_i, coef_maree_i)[pt_k][1] # OS2NS_uni(pt_k, Hs_i, ...)[1]
             modeles[j][i] += np.array([Hs_ptk, Tp_ptk])*dist_k
         modeles[j][i] = modeles[j][i]/somme_dist[j]
     

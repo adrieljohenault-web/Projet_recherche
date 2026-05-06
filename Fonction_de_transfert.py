@@ -1,7 +1,8 @@
 import numpy as np
 import os
 from variables_globales import *
-
+import heapq
+from time import time
 
 with open(
     os.path.join(path, "Delft3D_entrees", "allblocks_Vougot.txt"),
@@ -57,6 +58,36 @@ def sortie_fichier(i: int) -> list:
 
     return np.array(LSL), np.array(LSH)
 
+
+def sortie_fichier_uni(i: int, point: int):
+    """i est le numéro du fichier que l'on veut consulter, qui doit correspondre grâce à cette fonction à des conditions aux larges. Point est le point du maillage G2 où nous allons regarder le résultat. """
+    LSH = []
+    ch = os.path.join(
+        path,
+        "Delft3D_sorties_gamma04",
+        "SH",
+        f"D3D_res{nombre_fichier_sortie(i)}_SH.txt",
+    )
+    with open(ch, "r") as file:
+        LSH = [line for i, line in enumerate(file) if i in {point}]
+    LSH = LSH[0].split()
+    for j in range(len(LSH)):
+        LSH[j] = float(LSH[j])
+
+    LSL = []
+    ch = os.path.join(
+        path,
+        "Delft3D_sorties_gamma04",
+        "SL",
+        f"D3D_res{nombre_fichier_sortie(i)}_SL.txt",
+    )
+    with open(ch, "r") as file:
+        LSL = [line for i, line in enumerate(file) if i in {point}]
+    LSL = LSL[0].split()
+    for j in range(len(LSL)):
+        LSL[j] = float(LSL[j])
+
+    return np.array(LSL), np.array(LSH)
 # Quantités pour les normalisations
 
 mean_Hs = np.average(np.array([entree[i][0] for i in range(n_valeurs_calc)]))
@@ -165,6 +196,7 @@ def OS2NS_vectorized(Hs: float, Tp: float, Dir: float, coef_maree: float, maree:
         return coef_maree * sortieL + (1 - coef_maree) * sortieH
     return sortieL, sortieH
 
+
 def OS2NS_vectorized_per_points(Hs: float, Tp: float, Dir: float, coef_maree: float, 
                                  list_points: list, maree: bool = True) -> list:
     arg = np.array([Hs, Tp, Dir])
@@ -188,8 +220,7 @@ def OS2NS_vectorized_per_points(Hs: float, Tp: float, Dir: float, coef_maree: fl
         return coef_maree * sortieL + (1 - coef_maree) * sortieH
     return sortieL, sortieH
 
-
-#fonctino de verification
+#fonction de verification
 def verif_transfert_funct():
     a = OS2NS(0.25, 22.5, 270, 0.5)
     b = OS2NS_vectorized(0.25, 22.5, 270, 0.5)
@@ -217,3 +248,30 @@ def verif_transfert_funct_per_points():
 
 def OS2NS_uni(point: int, Hs: float, Tp: float, Dir: float, coef_maree: float, maree: bool = True):
     """Fonction de transfert optimisée qui renvoie un résultat en un seul point."""
+
+    arg = [Hs, Tp, Dir]
+
+    # Normalisation de argument et de l'entrée pour application des poids à l'interpolation plus tard
+
+    arg_norm = np.array([Hs/mean_Hs, Tp/mean_Tp, Dir/mean_Dir])
+
+    memo_norm: list[float] = np.array([0. for _ in range(n_valeurs_calc)])
+    for i in range(n_valeurs_calc):
+        memo_norm[i] = distance_euclidienne(arg_norm, entree_norm[i])
+
+    five_closest = heapq.nsmallest(n_interpolation, enumerate(memo_norm), key = lambda x: x[1])
+    for i in range(n_interpolation):
+        five_closest[i] = [five_closest[i][0], five_closest[i][1]]
+    repere_sortiesH = np.array([sortie_fichier_uni(x, point)[1] for x in [five_closest[i][0] for i in range(n_interpolation)]])
+    repere_sortiesL = np.array([sortie_fichier_uni(x, point)[0] for x in [five_closest[i][0] for i in range(n_interpolation)]])
+    sortieH, sortieL = np.array([0. for _ in range(8)]), np.array([0. for _ in range(8)])
+
+    sum_inv = sum([1/five_closest[i][1] for i in range(n_interpolation)])
+
+    for i in range(n_interpolation):
+            sortieH += repere_sortiesH[i]*1/five_closest[i][1]
+            sortieL += repere_sortiesL[i]*1/five_closest[i][1]
+    sortieL, sortieH = sortieL/sum_inv, sortieH/sum_inv
+
+    if maree : return coef_maree*sortieL + (1-coef_maree)*sortieH
+    return sortieL, sortieH

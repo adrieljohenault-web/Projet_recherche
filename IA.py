@@ -18,7 +18,7 @@ from sklearn.ensemble import HistGradientBoostingClassifier
 
 from variables_globales import *
 from Fonction_de_transfert import entree, sortie_fichier
-from formatage_verif import vin3
+from formatage_verif import v1, v2, v3, vin3
 
 
 X_train = entree
@@ -26,6 +26,10 @@ X_train = entree
 # y_trainl = y_train[:,0]
 # C'est trop long autant le faire une fois et le stocker
 
-X_val = vin3
-y_val 
+X_val = np.array([[vin3[i][j] for j in range(1, 4)] for i in range(len(vin3))])
+y_val1 = np.array([[v1[i][j] for j in range(1, 3)] for i in range(len(v1))]) # point de la sonde 1
+y_val2 = np.array([[v2[i][j] for j in range(1, 3)] for i in range(len(v2))]) # point de la sonde 2
+y_val3 = np.array([[v3[i][j] for j in range(1, 3)] for i in range(len(v3))]) # point de la sonde 3
 
+# On va commencer avec un modèle de type Random_Forest, car il demandera peu voire pas de fine-tuning
+# Pour s'aider éventuellement TP5 de 1ISDO
