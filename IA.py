@@ -23,6 +23,9 @@ from Fonction_de_transfert import entree, sortie_fichier
 from formatage_verif import v1, v2, v3, vin3
 
 
+
+############ Training ############
+
 X_train = entree
 
 def load_from_npz() -> tuple[np.ndarray, np.ndarray]:
@@ -45,7 +48,6 @@ ytrainh,ytrainl = load_from_npz()
 y_trainh = ytrainh[:,:,:2]
 y_trainl = ytrainl[:,:,:2]
 
-# Utilise -1 pour que NumPy calcule automatiquement la dimension finale (n_sortie * 2)
 y_trainh64 = y_trainh.reshape(y_trainh.shape[0], -1)
 
 
@@ -54,6 +56,7 @@ y_val1 = np.array([[v1[i][j] for j in range(1, 3)] for i in range(len(v1))]) # p
 y_val2 = np.array([[v2[i][j] for j in range(1, 3)] for i in range(len(v2))]) # point de la sonde 2
 y_val3 = np.array([[v3[i][j] for j in range(1, 3)] for i in range(len(v3))]) # point de la sonde 3
 
+# code précédent à supp une fois que la fonction trainning à été réalisée.
 """
 modeleh = make_pipeline(
     StandardScaler(),
@@ -121,4 +124,8 @@ def predict_all(X, path, block_size=500, n_outputs=72000):
     return np.concatenate(parts, axis=1)
 
 
-y_pred = predict_all(X_train, path, block_size=BLOCK_SIZE, n_outputs=y_trainh64.shape[1])
+#y_pred = predict_all(X_train, path, block_size=BLOCK_SIZE, n_outputs=y_trainh64.shape[1])
+
+
+############ Validation ############
+

@@ -82,7 +82,7 @@ def sortie_fichier_uni(i: int, point: int):
         f"D3D_res{nombre_fichier_sortie(i)}_SL.txt",
     )
     with open(ch, "r") as file:
-        LSL = [line for i, line in enumerate(file) if i in {point}]
+        LSL = [line for i, line in enumerate(file) if i in {point+1}]
     LSL = LSL[0].split()
     for j in range(len(LSL)):
         LSL[j] = float(LSL[j])

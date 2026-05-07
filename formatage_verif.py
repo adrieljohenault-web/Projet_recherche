@@ -5,6 +5,7 @@ import os
 from variables_globales import *
 import Fonction_de_transfert
 import csv
+from datetime import datetime
 
 class Date():
     def __init__(self, annee: int, mois: int, jour: int, h: int, m: int):
@@ -245,6 +246,68 @@ def get_closest_value(date1: list, list_condition_au_large : list):
                 return val 
     return trouver
 
+from datetime import datetime
+
+def date_to_datetime(date: list) -> datetime:
+    """Convertit [annee, mois, jour, heure, minute] en objet datetime."""
+    return datetime(date[0], date[1], date[2], date[3], date[4])
+
+def get_closest_value_2(date1: list, list_condition: list, seuil_minutes: float = 60.0):
+    """
+    Trouve la valeur dans list_condition dont la date est la plus proche de date1.
+    
+    - date1 : [annee, mois, jour, heure, minute]
+    - list_condition : liste de [date, val1, val2, ...] avec date = [annee, mois, jour, heure, minute]
+    - seuil_minutes : si le point le plus proche est à plus de seuil_minutes, retourne None
+    
+    Retourne les valeurs interpolées entre les deux entrées encadrantes si possible,
+    sinon la valeur du point le plus proche.
+    """
+    dt1 = date_to_datetime(date1)
+
+    # Calcul de l'écart en minutes pour chaque entrée
+    ecarts = [(abs((date_to_datetime(ligne[0]) - dt1).total_seconds()) / 60, i)
+              for i, ligne in enumerate(list_condition)]
+    ecarts.sort()
+
+    ecart_min, idx_proche = ecarts[0]
+
+    if ecart_min > seuil_minutes:
+        return None  # Pas de donnée suffisamment proche
+
+    # Chercher les deux entrées qui encadrent date1 pour interpoler
+    avant = None   # entrée juste avant dt1
+    apres = None   # entrée juste après dt1
+
+    for i, ligne in enumerate(list_condition):
+        dt = date_to_datetime(ligne[0])
+        if dt <= dt1:
+            if avant is None or dt > date_to_datetime(list_condition[avant][0]):
+                avant = i
+        if dt >= dt1:
+            if apres is None or dt < date_to_datetime(list_condition[apres][0]):
+                apres = i
+
+    # Si on a deux points encadrants, on interpole
+    if avant is not None and apres is not None and avant != apres:
+        dt_avant = date_to_datetime(list_condition[avant][0])
+        dt_apres = date_to_datetime(list_condition[apres][0])
+
+        duree_totale = (dt_apres - dt_avant).total_seconds()
+        duree_avant  = (dt1 - dt_avant).total_seconds()
+
+        w_apres = duree_avant / duree_totale   # poids du point après
+        w_avant = 1 - w_apres                  # poids du point avant
+
+        n_vals = len(list_condition[avant]) - 1  # nombre de valeurs (hors date)
+        return [
+            list_condition[avant][j+1] * w_avant + list_condition[apres][j+1] * w_apres
+            for j in range(n_vals)
+        ]
+
+    # Sinon, retour de la valeur la plus proche sans interpolation
+    return list_condition[idx_proche][1:]
+
 
 def verif_modele_sonde(v_sonde:list, v_au_large:list, num_sonde:int, list_dpt:list):
 
@@ -255,14 +318,16 @@ def verif_modele_sonde(v_sonde:list, v_au_large:list, num_sonde:int, list_dpt:li
         writer = csv.writer(csvfile)
         writer.writerow(["date", "Hs_err", "Tp_err"])
 
-        for k in range(len(v_sonde)):
+        for k in range(6):               # len(v_sonde)
             date1 = v_sonde[k][0]
             val_large = get_closest_value(date1, v_au_large)
             Hs = val_large[0]
             Tp = val_large[1]
             Dir = val_large[2]
 
-            coef = get_coef_marree(list_dpt[k][1], dpt_max, dpt_min)
+            dpt = get_closest_value_2(date1, list_dpt)
+
+            coef = get_coef_marree(dpt[0], dpt_max, dpt_min)
 
             results = [
                 Fonction_de_transfert.OS2NS_uni(list_points[j], Hs, Tp, Dir, coef, True)
@@ -285,4 +350,4 @@ def verif_modele_sonde(v_sonde:list, v_au_large:list, num_sonde:int, list_dpt:li
 
     return Lerreur
 
-verif_modele_sonde(v1,vin3,1,vin_dpt)
+verif_modele_sonde(v1,vin3,0,vin_dpt)
