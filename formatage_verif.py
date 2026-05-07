@@ -263,18 +263,18 @@ def verif_modele_sonde(v_sonde:list, v_au_large:list, num_sonde:int, list_dpt:li
             Dir = val_large[2]
 
             coef = get_coef_marree(list_dpt[k][1], dpt_max, dpt_min)
-            val_fonction_transfert_grid = Fonction_de_transfert.OS2NS_vectorized_per_points(Hs, Tp, Dir, coef, list_points, True)
 
-            Hs_val_fonction_transfert = (val_fonction_transfert_grid[0][0]*points_and_weights[num_sonde][0][1]
-                                         + val_fonction_transfert_grid[1][0]*points_and_weights[num_sonde][1][1]
-                                         + val_fonction_transfert_grid[2][0]*points_and_weights[num_sonde][2][1]
-                                         + val_fonction_transfert_grid[3][0]*points_and_weights[num_sonde][3][1])
-            
-            Tp_val_fonction_transfert = (val_fonction_transfert_grid[0][1]*points_and_weights[num_sonde][0][1]
-                                         + val_fonction_transfert_grid[1][1]*points_and_weights[num_sonde][1][1]
-                                         + val_fonction_transfert_grid[2][1]*points_and_weights[num_sonde][2][1]
-                                         + val_fonction_transfert_grid[3][1]*points_and_weights[num_sonde][3][1])
+            results = [
+                Fonction_de_transfert.OS2NS_uni(list_points[j], Hs, Tp, Dir, coef, True)
+                for j in range(4)
+            ]
 
+            Hs_val_fonction_transfert = sum(
+                results[j][0] * points_and_weights[num_sonde][j][1] for j in range(4)
+            )
+            Tp_val_fonction_transfert = sum(
+                results[j][1] * points_and_weights[num_sonde][j][1] for j in range(4)
+            )
             Hs_sonde = v_sonde[k][1]
             Tp_sonde = v_sonde[k][2]
 
@@ -285,4 +285,4 @@ def verif_modele_sonde(v_sonde:list, v_au_large:list, num_sonde:int, list_dpt:li
 
     return Lerreur
 
-#verif_modele_sonde(v1,vin3,1,vin_dpt)
+verif_modele_sonde(v1,vin3,1,vin_dpt)
