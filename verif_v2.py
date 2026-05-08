@@ -57,6 +57,7 @@ def format_sonde(verif: np.ndarray) -> np.ndarray:
 v1 = format_sonde(verif_1)
 v2 = format_sonde(verif_2)
 v3 = format_sonde(verif_3)
+# le nouveau format des sondes est le suivant : [date, Hs,Tp, dt]
 
 # obtention des coefiscient de la marée en fonction de la date
 
@@ -133,6 +134,47 @@ for line in lines[1:]:          # on saute le header
     vin.append([dt, Hs, Tp, Dir])
 
 vin = np.array(vin[25862:27996], dtype=object)
+
+def coincide_large_to_shore(dates:list, vin):
+    vin_new = []
+    
+    for i in range(10,13):                      # len(dates)
+        date = dates[i]
+
+        date_sup = 0
+        date_inf = 0
+        finished = False
+        k = 0
+        while not finished:
+            if vin[k][0] > date:
+                date_sup = vin[k][0]
+                date_inf = vin[k-1][0]
+                finished = True
+            else : 
+                k+=1
+        
+        delta = date_sup - date_inf
+        w_sup= (date - date_inf)/delta
+        w_inf = (date_sup - date)/delta
+
+        Hs_new = w_inf * vin[k-1][1] + w_sup * vin[k][1]
+        Tp_new = w_inf * vin[k-1][2] + w_sup * vin[k][2]
+        Dir_new = w_inf * vin[k-1][3] + w_sup * vin[k][3]
+
+        print(vin[k-1], vin[k], v1[i], Hs_new, Tp_new, Dir_new)
+
+        vin_new.append([date, Hs_new, Tp_new, Dir_new])
+
+    
+    return np.array(vin_new)
+
+coincide_large_to_shore(v1[:,0], vin)
+
+
+            
+
+
+
 
 
 
