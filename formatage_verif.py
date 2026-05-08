@@ -113,6 +113,7 @@ for donnees in vin0:
 formatage(verif_1)
 formatage(verif_2)
 formatage(verif_3)
+print(vin1[0])
 
 # Les données ne se correspondent pas en dates et en heures, nous allons donc créer une fonction de correspondance qui prend en argument une liste de vérification d'entrée et une de sortie et qui prend pour chaque heure de la liste d'entrée une donnée de la liste de sortie, la plus proche possible de l'heure prise.
 

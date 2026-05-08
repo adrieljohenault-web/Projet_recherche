@@ -111,17 +111,30 @@ with open(os.path.join(path, "Vagues_forcage", "Waves_resourcecode_138311.csv"),
 for i in range(len(lines)):
     lines[i] = lines[i].split()
 
-vin0 = []
+vin = []
+for line in lines[1:]:          # on saute le header
+    date_str = line[0]             # '2009-12-31'
+    champs   = line[1].split(',')  # split par virgule
+    
+    time_str = champs[0]           # '23:00:00'
+    
+    dt = datetime.datetime(
+        int(date_str[:4]),          # année
+        int(date_str[5:7]),         # mois
+        int(date_str[8:10]),        # jour
+        int(time_str[:2]),          # heure
+        int(time_str[3:5])          # minute
+    )
+    
+    Hs  = float(champs[2])
+    Tp  = float(champs[5])
+    Dir = float(champs[7])
+    
+    vin.append([dt, Hs, Tp, Dir])
 
-for donnees in verif_in:
-    donnees[0] = donnees[0].split('-')
-
-    donnees[1] = donnees[1].split(',')
-    donnees[1][0] = donnees[1][0].split(':')
-    donnees[1][0].pop(2)
-    vin0.append([donnees[0][j] for j in range(3)]+[donnees[1][0][j] for j in range(2)]+[donnees[1][j] for j in range(1, 14)])
+vin = np.array(vin[25862:27996], dtype=object)
 
 
-verif_in = np.array(lines[1:])
 
-print(verif_in[0])
+# sortie : ['2009-12-31', '23:00:00,31.5,2.002,5.0,6.74,7.462686567164178,75.0,6.1,6.0,49.3,13.9,-8.2,-6.9,-0.54,-0.36']
+# format : [',dpt,hs,t02,t0m1,tp,lm,dir,dp,spr,cge,uwnd,vwnd,ucur,vcur']
