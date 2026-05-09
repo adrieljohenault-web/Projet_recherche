@@ -69,7 +69,7 @@ def sortie_fichier_uni(i: int, point: int):
         f"D3D_res{nombre_fichier_sortie(i)}_SH.txt",
     )
     with open(ch, "r") as file:
-        LSH = [line for i, line in enumerate(file) if i in {point}]
+        LSH = [line for i, line in enumerate(file) if i in {point+1}]
     LSH = LSH[0].split()
     for j in range(len(LSH)):
         LSH[j] = float(LSH[j])
@@ -214,6 +214,35 @@ def OS2NS_vectorized_per_points(Hs: float, Tp: float, Dir: float, coef_maree: fl
     sortie_high = np.array([sortie_fichier(idx)[1][list_points] for idx in indices_proches])
 
     sortieL = np.average(sortie_low, axis=0, weights=poids)
+    sortieH = np.average(sortie_high, axis=0, weights=poids)
+
+    if maree:
+        return coef_maree * sortieL + (1 - coef_maree) * sortieH
+    return sortieL, sortieH
+
+def OS2NS_vectorized_per_points2(Hs: float, Tp: float, Dir: float, coef_maree: float,
+                                 list_points: list, maree: bool = True) -> np.ndarray:
+    arg_norm = np.array([Hs, Tp, Dir]) / _means
+
+    distances = np.sqrt(np.sum((_entree_norm - arg_norm)**2, axis=1))
+    indices_proches = np.argsort(distances)[:n_interpolation]
+    dist_proches = distances[indices_proches]
+    poids = 1.0 / (dist_proches + 1e-12)
+
+    n_points = len(list_points)
+
+    # shape : (n_interpolation, n_points, 8)
+    sortie_low  = np.zeros((n_interpolation, n_points, 8))
+    sortie_high = np.zeros((n_interpolation, n_points, 8))
+
+    for h, idx in enumerate(indices_proches):
+        for p, point in enumerate(list_points):
+            lsl, lsh = sortie_fichier_uni(idx, point)
+            sortie_low[h, p, :]  = lsl
+            sortie_high[h, p, :] = lsh
+
+    # moyenne pondérée sur les n_interpolation voisins → shape (n_points, 8)
+    sortieL = np.average(sortie_low,  axis=0, weights=poids)
     sortieH = np.average(sortie_high, axis=0, weights=poids)
 
     if maree:

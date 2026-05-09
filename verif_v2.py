@@ -170,13 +170,17 @@ def coincide_large_to_shore(dates: np.ndarray, vin: np.ndarray) -> np.ndarray:
 # fait en sorte d'avoir les valeurs au large qui coincide en date avec les valeurs des sondes
 vin_sync = coincide_large_to_shore(v1[:, 0], vin)
 
+# Après coincide_large_to_shore, re-synchroniser
+v1, v2, v3, v_marree, vin_sync = synchroniser(v1, v2, v3, v_marree, vin_sync)
+
+
 def get_error(v_sonde,num_sonde, vin_sync):
     # retourn un tuple (Hs error, Tp error)
     closest = points_and_weights[num_sonde]                     #num_sonde = k - 1
 
     error = []
 
-    for i in range(1):          #len(v_sonde)
+    for i in range(130,131):          #len(v_sonde)
         # prévue par la fonction de transfert
         Hs_large = vin_sync[i][1]
         Tp_large = vin_sync[i][2]
@@ -184,28 +188,59 @@ def get_error(v_sonde,num_sonde, vin_sync):
 
         # res fonction de transfert 
         Hs_res, Tp_res = 0,0
-        for ind,w in closest:
+        for ind, w in closest:
             sortie = OS2NS_uni(ind, Hs_large, Tp_large, Dir_large, v_marree[i][1])
-            Hs_res, Tp_res = sortie[0]*w, sortie [1]*w
+            Hs_res += sortie[0] * w
+            Tp_res += sortie[1] * w
         
         # données réelles, sondes k 
         Hs_sonde = v_sonde[i][1]
         Tp_sonde = v_sonde[i][2]
+        
 
         # calcul de l'erreur 
+
+        print(Hs_res, Hs_sonde, Tp_res, Tp_sonde)
         Hs_err = abs(Hs_res - Hs_sonde)
         Tp_err = abs(Tp_res - Tp_sonde)
 
-        error.append(Hs_err,Tp_err)
+        error.append((Hs_err,Tp_err))
+        print(i/len(v_sonde))
+
+    return error
 
 
+def get_error2(v_sonde, num_sonde, vin_sync, v_marree):
+    closest = points_and_weights[num_sonde]
+    list_points = [int(ind) for ind, w in closest]
+    weights     = [w        for ind, w in closest]
 
+    error = []
 
+    for i in range(len(v_sonde)):                  # len(v_sonde)
+        Hs_large  = float(vin_sync[i][1])
+        Tp_large  = float(vin_sync[i][2])
+        Dir_large = float(vin_sync[i][3])
+        coef      = float(v_marree[i][1])
 
-        
+        # Un seul appel pour les 4 points → shape (4, 8)
+        sortie = OS2NS_vectorized_per_points2(
+            Hs_large, Tp_large, Dir_large, coef, list_points
+        )
 
+        Hs_res = sum(sortie[j][0] * weights[j] for j in range(4))
+        Tp_res = sum(sortie[j][1] * weights[j] for j in range(4))
 
-get_error(v1, 0, vin_sync)
+        Hs_sonde = float(v_sonde[i][1])
+        Tp_sonde = float(v_sonde[i][2])
+
+        error.append((abs(Hs_res - Hs_sonde), abs(Tp_res - Tp_sonde)))
+
+        print(i/len(v_sonde))
+
+    return error
+
+get_error2(v1, 0, vin_sync, v_marree)
 
 
 
