@@ -7,6 +7,7 @@ import datetime
 import matplotlib.pyplot as plt
 
 from variables_globales import *
+from Fonction_de_transfert import *
 
 
 # ---------- Importation des données de sortie mesurées ---------
@@ -135,48 +136,76 @@ for line in lines[1:]:          # on saute le header
 
 vin = np.array(vin[25862:27996], dtype=object)
 
-def coincide_large_to_shore(dates:list, vin):
+def coincide_large_to_shore(dates: np.ndarray, vin: np.ndarray) -> np.ndarray:
+
+    vin_dates = vin[:, 0]  # array de datetime
+
+    # np.searchsorted trouve pour chaque date l'indice k tel que
+    # vin_dates[k-1] <= date < vin_dates[k]
+    indices = np.searchsorted(vin_dates, dates)
+
     vin_new = []
-    
-    for i in range(10,13):                      # len(dates)
-        date = dates[i]
+    for i, date in enumerate(dates):
+        k = indices[i]
 
-        date_sup = 0
-        date_inf = 0
-        finished = False
-        k = 0
-        while not finished:
-            if vin[k][0] > date:
-                date_sup = vin[k][0]
-                date_inf = vin[k-1][0]
-                finished = True
-            else : 
-                k+=1
-        
-        delta = date_sup - date_inf
-        w_sup= (date - date_inf)/delta
-        w_inf = (date_sup - date)/delta
+        # Gardes-fous aux bords
+        if k == 0 or k >= len(vin):
+            continue  # pas de données encadrantes, on saute
 
-        Hs_new = w_inf * vin[k-1][1] + w_sup * vin[k][1]
-        Tp_new = w_inf * vin[k-1][2] + w_sup * vin[k][2]
-        Dir_new = w_inf * vin[k-1][3] + w_sup * vin[k][3]
+        dt_inf = vin[k-1][0]
+        dt_sup = vin[k][0]
+        delta  = (dt_sup - dt_inf).total_seconds()
 
-        print(vin[k-1], vin[k], v1[i], Hs_new, Tp_new, Dir_new)
+        w_sup = (date - dt_inf).total_seconds() / delta
+        w_inf = 1 - w_sup
+
+        Hs_new  = w_inf * float(vin[k-1][1]) + w_sup * float(vin[k][1])
+        Tp_new  = w_inf * float(vin[k-1][2]) + w_sup * float(vin[k][2])
+        Dir_new = w_inf * float(vin[k-1][3]) + w_sup * float(vin[k][3])
 
         vin_new.append([date, Hs_new, Tp_new, Dir_new])
 
-    
-    return np.array(vin_new)
+    return np.array(vin_new, dtype=object)
 
-coincide_large_to_shore(v1[:,0], vin)
+# fait en sorte d'avoir les valeurs au large qui coincide en date avec les valeurs des sondes
+vin_sync = coincide_large_to_shore(v1[:, 0], vin)
+
+def get_error(v_sonde,num_sonde, vin_sync):
+    # retourn un tuple (Hs error, Tp error)
+    closest = points_and_weights[num_sonde]                     #num_sonde = k - 1
+
+    error = []
+
+    for i in range(1):          #len(v_sonde)
+        # prévue par la fonction de transfert
+        Hs_large = vin_sync[i][1]
+        Tp_large = vin_sync[i][2]
+        Dir_large = vin_sync[i][3]
+
+        # res fonction de transfert 
+        Hs_res, Tp_res = 0,0
+        for ind,w in closest:
+            sortie = OS2NS_uni(ind, Hs_large, Tp_large, Dir_large, v_marree[i][1])
+            Hs_res, Tp_res = sortie[0]*w, sortie [1]*w
+        
+        # données réelles, sondes k 
+        Hs_sonde = v_sonde[i][1]
+        Tp_sonde = v_sonde[i][2]
+
+        # calcul de l'erreur 
+        Hs_err = abs(Hs_res - Hs_sonde)
+        Tp_err = abs(Tp_res - Tp_sonde)
+
+        error.append(Hs_err,Tp_err)
 
 
-            
 
 
 
+        
+
+
+get_error(v1, 0, vin_sync)
 
 
 
-# sortie : ['2009-12-31', '23:00:00,31.5,2.002,5.0,6.74,7.462686567164178,75.0,6.1,6.0,49.3,13.9,-8.2,-6.9,-0.54,-0.36']
-# format : [',dpt,hs,t02,t0m1,tp,lm,dir,dp,spr,cge,uwnd,vwnd,ucur,vcur']

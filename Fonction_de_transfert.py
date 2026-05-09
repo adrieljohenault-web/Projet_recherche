@@ -275,3 +275,5 @@ def OS2NS_uni(point: int, Hs: float, Tp: float, Dir: float, coef_maree: float, m
 
     if maree : return coef_maree*sortieL + (1-coef_maree)*sortieH
     return sortieL, sortieH
+
+#sortie :   Hs[m]       Tp[s]       Tm01[s]    Dp[degN]    Dm[degN]    DSpr[deg]     WD[m]      Qb[-]
