@@ -5,6 +5,7 @@ import os
 import numpy as np
 import datetime
 import matplotlib.pyplot as plt
+import csv
 
 from variables_globales import *
 from Fonction_de_transfert import *
@@ -174,50 +175,14 @@ vin_sync = coincide_large_to_shore(v1[:, 0], vin)
 v1, v2, v3, v_marree, vin_sync = synchroniser(v1, v2, v3, v_marree, vin_sync)
 
 
-def get_error(v_sonde,num_sonde, vin_sync):
-    # retourn un tuple (Hs error, Tp error)
-    closest = points_and_weights[num_sonde]                     #num_sonde = k - 1
-
-    error = []
-
-    for i in range(130,131):          #len(v_sonde)
-        # prévue par la fonction de transfert
-        Hs_large = vin_sync[i][1]
-        Tp_large = vin_sync[i][2]
-        Dir_large = vin_sync[i][3]
-
-        # res fonction de transfert 
-        Hs_res, Tp_res = 0,0
-        for ind, w in closest:
-            sortie = OS2NS_uni(ind, Hs_large, Tp_large, Dir_large, v_marree[i][1])
-            Hs_res += sortie[0] * w
-            Tp_res += sortie[1] * w
-        
-        # données réelles, sondes k 
-        Hs_sonde = v_sonde[i][1]
-        Tp_sonde = v_sonde[i][2]
-        
-
-        # calcul de l'erreur 
-
-        print(Hs_res, Hs_sonde, Tp_res, Tp_sonde)
-        Hs_err = abs(Hs_res - Hs_sonde)
-        Tp_err = abs(Tp_res - Tp_sonde)
-
-        error.append((Hs_err,Tp_err))
-        print(i/len(v_sonde))
-
-    return error
-
-
-def get_error2(v_sonde, num_sonde, vin_sync, v_marree):
+def get_error(v_sonde, num_sonde, vin_sync, v_marree):
     closest = points_and_weights[num_sonde]
     list_points = [int(ind) for ind, w in closest]
     weights     = [w        for ind, w in closest]
 
     error = []
 
-    for i in range(len(v_sonde)):                  # len(v_sonde)
+    for i in range(540,541):                  # len(v_sonde)
         Hs_large  = float(vin_sync[i][1])
         Tp_large  = float(vin_sync[i][2])
         Dir_large = float(vin_sync[i][3])
@@ -240,7 +205,102 @@ def get_error2(v_sonde, num_sonde, vin_sync, v_marree):
 
     return error
 
-get_error2(v1, 0, vin_sync, v_marree)
+def get_error_all(v1,v2,v3, vin_sync, v_marree):
+    closest1 = points_and_weights[0]
+    closest2 = points_and_weights[1]
+    closest3 = points_and_weights[2]
+
+    list_points1 = [int(ind) for ind, w in closest1]
+    list_points2 = [int(ind) for ind, w in closest2]
+    list_points3 = [int(ind) for ind, w in closest3]
+    weights1     = [w        for ind, w in closest1]
+    weights2     = [w        for ind, w in closest2]
+    weights3     = [w        for ind, w in closest3]
+
+    error = []
+
+    for i in range(540,541):                  # len(v1)
+        dict = {}
+        coef = float(v_marree[i][1])
+
+        Hs_large  = float(vin_sync[i][1])
+        Tp_large  = float(vin_sync[i][2])
+        Dir_large = float(vin_sync[i][3])
+
+        # sonde 1
+        sortie1 = OS2NS_vectorized_per_points2(
+            Hs_large, Tp_large, Dir_large, coef, list_points1
+        )
+
+        Hs_res1 = sum(sortie1[j][0] * weights1[j] for j in range(4))
+        Tp_res1 = sum(sortie1[j][1] * weights1[j] for j in range(4))
+
+        Hs_sonde1 = float(v1[i][1])
+        Tp_sonde1 = float(v1[i][2])
+
+        dict[1] = (abs(Hs_res1 - Hs_sonde1), abs(Tp_res1 - Tp_sonde1))
+
+        # sonde 2
+        sortie2 = OS2NS_vectorized_per_points2(
+            Hs_large, Tp_large, Dir_large, coef, list_points2
+        )
+
+        Hs_res2 = sum(sortie2[j][0] * weights2[j] for j in range(4))
+        Tp_res2 = sum(sortie2[j][1] * weights2[j] for j in range(4))
+
+        Hs_sonde2 = float(v2[i][1])
+        Tp_sonde2 = float(v2[i][2])
+
+        dict[2] = (abs(Hs_res2 - Hs_sonde2), abs(Tp_res2 - Tp_sonde2))
+
+        #sortie 3
+        sortie3 = OS2NS_vectorized_per_points2(
+            Hs_large, Tp_large, Dir_large, coef, list_points3
+        )
+
+        Hs_res3 = sum(sortie3[j][0] * weights3[j] for j in range(4))
+        Tp_res3 = sum(sortie3[j][1] * weights3[j] for j in range(4))
+
+        Hs_sonde3 = float(v3[i][1])
+        Tp_sonde3 = float(v3[i][2])
+
+        dict[3] = (abs(Hs_res3 - Hs_sonde3), abs(Tp_res3 - Tp_sonde3))
+
+        print(i/len(v1))
+
+        error.append(dict)
+
+    return error
+
+
+def sauvegarde_error(v1, v2, v3, vin_sync, v_marree, nom_fichier="erreurs_all_transfer_function.csv"):
+    
+    errors = get_error_all(v1, v2, v3, vin_sync, v_marree)
+
+    with open(nom_fichier, "w", newline="") as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow([
+            "date",
+            "Hs_err_s1", "Tp_err_s1",
+            "Hs_err_s2", "Tp_err_s2",
+            "Hs_err_s3", "Tp_err_s3",
+        ])
+
+        for i, d in enumerate(errors):
+            writer.writerow([
+                v1[i][0],
+                round(d[1][0], 4), round(d[1][1], 4),
+                round(d[2][0], 4), round(d[2][1], 4),
+                round(d[3][0], 4), round(d[3][1], 4),
+            ])
+
+    print(f"Sauvegardé : {nom_fichier} ({len(errors)} lignes)")
+
+sauvegarde_error(v1, v2, v3, vin_sync, v_marree)
+
+
+
+
 
 
 
