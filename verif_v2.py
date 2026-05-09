@@ -296,7 +296,6 @@ def sauvegarde_error(v1, v2, v3, vin_sync, v_marree, nom_fichier="erreurs_all_tr
 
     print(f"Sauvegardé : {nom_fichier} ({len(errors)} lignes)")
 
-sauvegarde_error(v1, v2, v3, vin_sync, v_marree)
 
 
 
