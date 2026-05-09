@@ -182,7 +182,7 @@ def get_error(v_sonde, num_sonde, vin_sync, v_marree):
 
     error = []
 
-    for i in range(540,541):                  # len(v_sonde)
+    for i in range(len(v1)):                  # len(v_sonde)
         Hs_large  = float(vin_sync[i][1])
         Tp_large  = float(vin_sync[i][2])
         Dir_large = float(vin_sync[i][3])
@@ -219,7 +219,7 @@ def get_error_all(v1,v2,v3, vin_sync, v_marree):
 
     error = []
 
-    for i in range(540,541):                  # len(v1)
+    for i in range(len(v1)):                  # len(v1)
         dict = {}
         coef = float(v_marree[i][1])
 
