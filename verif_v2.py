@@ -297,9 +297,36 @@ def sauvegarde_error(v1, v2, v3, vin_sync, v_marree, nom_fichier="erreurs_all_tr
     print(f"Sauvegardé : {nom_fichier} ({len(errors)} lignes)")
 
 
+def get_MSE(nom_fichier="erreurs_all_transfer_function.csv"):
+    """
+    Calcule la Mean Squared Error (MSE) pour les 6 variables d'erreur stockées dans le CSV.
+    Retourne un dictionnaire avec les valeurs de MSE pour chaque variable.
+    """
+    # On utilise numpy (déjà importé dans votre fichier) pour charger les données numériques.
+    # On ignore la première ligne (header) et la première colonne (date).
+    # Les colonnes d'erreur sont aux indices 1 à 6.
+    try:
+        data = np.genfromtxt(nom_fichier, delimiter=',', skip_header=1, usecols=(1, 2, 3, 4, 5, 6))
+        
+        # Puisque le CSV contient déjà les écarts (erreurs), 
+        # on calcule le carré de chaque valeur puis la moyenne de chaque colonne (axis=0).
+        mse_values = np.mean(data**2, axis=0)
+        
+        # Noms des variables pour une lecture plus claire
+        variables = ["Hs_s1", "Tp_s1", "Hs_s2", "Tp_s2", "Hs_s3", "Tp_s3"]
+        
+        # Création d'un dictionnaire pour associer chaque variable à sa MSE
+        resultats = dict(zip(variables, mse_values))
+        
+        print("\n--- Résultats de la MSE ---")
+        for var, val in resultats.items():
+            print(f"MSE {var}: {val:.4f}")
+            
+        return resultats
 
+    except Exception as e:
+        print(f"Erreur lors du calcul de la MSE : {e}")
+        return None
 
-
-
-
-
+# Exemple d'appel :
+print(get_MSE())
