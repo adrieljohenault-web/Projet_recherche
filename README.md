@@ -85,3 +85,6 @@ def verif_345(v,vin3):
 
 
 Pour la prochaine fois : Au lieu de calculer tout les points pour la fonction de tansfert, on la modifie pour calculer que les points qui nous interesse vraiment (ceux de points_and_weights), par ce que je pense que c'est ca qui prend du temps
+
+
+On peut améliorer la précision de notre fonction de transfert en regardant les marées haute et basse sur uen demi-journée, ainsi il n'y aura pas qu'une seule valeur de min_h et de max_h, mais une pour chaque cycle de marées. 
