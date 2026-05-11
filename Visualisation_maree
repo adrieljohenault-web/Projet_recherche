@@ -1,0 +1,18 @@
+import os
+import matplotlib.pyplot as plt
+from variables_globales import *
+
+debut = 0
+fin = 1000
+
+with open(
+    os.path.join(path, "Vagues_forcage", "Tide_Brignogan_2009-2020_UTC_hourly.txt"), 'r'
+) as file:
+    lines = file.readlines()[1:]
+    for i in range(len(lines)):
+        lines[i] = lines[i].split()
+    
+tide = [float(lines[i][5]) for i in range(debut, fin)]
+
+plt.plot(tide)
+plt.show()
