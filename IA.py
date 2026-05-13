@@ -26,7 +26,9 @@ from formatage_verif import v1, v2, v3, vin3
 
 ############ Training ############
 
+#le nombre d'entrée est de 1761
 X_train = entree
+
 
 def load_from_npz() -> tuple[np.ndarray, np.ndarray]:
     """
@@ -48,6 +50,7 @@ ytrainh,ytrainl = load_from_npz()
 y_trainh = ytrainh[:,:,:2]
 y_trainl = ytrainl[:,:,:2]
 
+#64 pour 64000 sorties 
 y_trainh64 = y_trainh.reshape(y_trainh.shape[0], -1)
 
 
@@ -106,6 +109,7 @@ def training():
             pickle.dump(model_block, f)
         print(f"  -> Saved.")
 
+training()
 
 # ---- PRÉDICTION ----
 

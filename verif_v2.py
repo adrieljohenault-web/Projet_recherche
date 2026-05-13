@@ -9,6 +9,8 @@ import csv
 
 from variables_globales import *
 from Fonction_de_transfert import *
+from err_suivant_coef_maree import plot_err_vs_coef_maree
+
 
 
 # ---------- Importation des données de sortie mesurées ---------
@@ -85,6 +87,7 @@ def get_coef_marree(v_sonde:np.array):
     return arr_coef
 
 v_marree = get_coef_marree(v3)
+print(v_marree)
 
 # on intersect les données pour qu'elles soient compatibles sur les dates
 
@@ -328,5 +331,11 @@ def get_MSE(nom_fichier="erreurs_all_transfer_function.csv"):
         print(f"Erreur lors du calcul de la MSE : {e}")
         return None
 
-# Exemple d'appel :
-print(get_MSE())
+
+def hist_err_marr():
+    plot_err_vs_coef_maree(
+        v_marree,
+        nom_fichier="erreurs_all_transfer_function.csv",
+        n_bins=10,
+        save_path="err_vs_coef_maree.png",   # optionnel
+    )
