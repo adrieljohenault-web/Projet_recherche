@@ -163,8 +163,8 @@ def OS2NS(Hs: float, Tp: float, Dir: float, coef_maree: float, maree: bool = Tru
     if maree : return coef_maree*sortieL + (1-coef_maree)*sortieH
     return sortieL, sortieH
 
-_means = np.mean(entree[:, :3], axis=0)
-_entree_norm = entree[:, :3] / _means
+means_ = np.mean(entree[:, :3], axis=0)
+entree_norm_ = entree[:, :3] / means_
 
 def OS2NS_vectorized(Hs: float, Tp: float, Dir: float, coef_maree: float, maree: bool = True) -> list:
     """Fonction de transfert en tant que telle : réalise l'interpolation qui permet d'obtenir les condtitions de déferlement. Retourne la matrice des conditions de déferlement en chaque point.
@@ -176,8 +176,8 @@ def OS2NS_vectorized(Hs: float, Tp: float, Dir: float, coef_maree: float, maree:
 
 
     # Normalisation de argument et de l'entrée pour application des poids à l'interpolation plus tard
-    arg_norm = arg / _means
-    entree_norm = _entree_norm
+    arg_norm = arg / means_
+    entree_norm = entree_norm_
 
     distances = np.sqrt(np.sum((entree_norm - arg_norm)**2, axis=1))
 
@@ -202,8 +202,8 @@ def OS2NS_vectorized_per_points(Hs: float, Tp: float, Dir: float, coef_maree: fl
     arg = np.array([Hs, Tp, Dir])
 
 
-    arg_norm = arg / _means
-    entree_norm = _entree_norm
+    arg_norm = arg / means_
+    entree_norm = entree_norm_
 
     distances = np.sqrt(np.sum((entree_norm - arg_norm)**2, axis=1))
     indices_proches = np.argsort(distances)[:n_interpolation]
@@ -222,9 +222,9 @@ def OS2NS_vectorized_per_points(Hs: float, Tp: float, Dir: float, coef_maree: fl
 
 def OS2NS_vectorized_per_points2(Hs: float, Tp: float, Dir: float, coef_maree: float,
                                  list_points: list, maree: bool = True) -> np.ndarray:
-    arg_norm = np.array([Hs, Tp, Dir]) / _means
+    arg_norm = np.array([Hs, Tp, Dir]) / means_
 
-    distances = np.sqrt(np.sum((_entree_norm - arg_norm)**2, axis=1))
+    distances = np.sqrt(np.sum((entree_norm_ - arg_norm)**2, axis=1))
     indices_proches = np.argsort(distances)[:n_interpolation]
     dist_proches = distances[indices_proches]
     poids = 1.0 / (dist_proches + 1e-12)
@@ -236,7 +236,7 @@ def OS2NS_vectorized_per_points2(Hs: float, Tp: float, Dir: float, coef_maree: f
     sortie_high = np.zeros((n_interpolation, n_points, 8))
 
     for h, idx in enumerate(indices_proches):
-        for p, point in enumerate(list_points):
+        for point,p in enumerate(list_points):
             lsl, lsh = sortie_fichier_uni(idx, point)
             sortie_low[h, p, :]  = lsl
             sortie_high[h, p, :] = lsh
@@ -265,7 +265,7 @@ def verif_transfert_funct():
 
 def verif_transfert_funct_per_points():
     points = [17000,15000,11000,9000]
-    a = OS2NS_vectorized_per_points(0.25, 22.5, 270, 0.5, points)
+    a = OS2NS_vectorized_per_points2(0.25, 22.5, 270, 0.5, points)
     b = OS2NS_vectorized(0.25, 22.5, 270, 0.5)
     eps = 0.01           # précision que l'on veut avoir 
     for i in range(len(points)):
@@ -306,3 +306,14 @@ def OS2NS_uni(point: int, Hs: float, Tp: float, Dir: float, coef_maree: float, m
     return sortieL, sortieH
 
 #sortie :   Hs[m]       Tp[s]       Tm01[s]    Dp[degN]    Dm[degN]    DSpr[deg]     WD[m]      Qb[-]
+
+def OS2NS_uni_pluriel(points:list, Hs: float, Tp: float, Dir: float, coef_maree: float, maree: bool = True):
+    resl = np.zeros((1,8))
+    resh = np.zeros((1,8))
+    for idx,w in points:
+        resl += OS2NS_uni(idx, Hs, Tp,Dir,1,False)[0] * w
+        resh += OS2NS_uni(idx, Hs, Tp,Dir,1,False)[1] * w
+    
+    return resl, resh
+
+

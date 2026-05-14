@@ -3,9 +3,11 @@ import matplotlib.pyplot as plt
 from variables_globales import *
 from datetime import datetime
 from Fonction_de_transfert import nombre_fichier_sortie
+from sonde_donnee_formatage import v1, v2, v3, v_marree, vin_sync
+from IA2 import marnage
 
 debut = 0
-fin = 240
+fin = 24000
 
 def visu_dpt_large():
     with open(
@@ -19,6 +21,31 @@ def visu_dpt_large():
 
     plt.plot(tide)
     plt.show()
+
+#visu_dpt_large()
+
+def visu_maree():
+
+    # Extraction des colonnes pour la lecture
+    dates = vin_sync[:, 0]
+    dpt_large = vin_sync[:, 4]  # Index 1 : Hs (hauteur significative au large)
+
+    fig, ax1 = plt.subplots(figsize=(12, 6))
+
+    # Axe 2 : Hs au large (Données de forçage)
+    ax2 = ax1.twinx()
+    color_hs = 'tab:red'
+    ax2.set_ylabel('Hs au large (m)', color=color_hs)
+    ax2.plot(dates, dpt_large, color=color_hs, label='dpt Large (vin)', linestyle='--')
+    ax2.tick_params(axis='y', labelcolor=color_hs)
+
+    # Titre et légende
+    plt.title('Comparaison de la marée (v3) et de la hauteur des vagues au large (vin_sync)')
+    fig.tight_layout()
+
+    plt.show()
+
+#visu_maree()
 
 def h_SL(k:int):
     LSL = []
@@ -94,7 +121,7 @@ def visu_h_SL_blanc_zero(data, sondes=None):
     plt.tight_layout()
     plt.show()
 
-visu_h_SL_blanc_zero(h_SL(1200), [sonde1,sonde2,sonde3])
+#visu_h_SL_blanc_zero(h_SL(1200), [sonde1,sonde2,sonde3])
 
 def get_h_sup_0():
     L_H_sup_0 = []
@@ -114,3 +141,71 @@ def get_h_sup_0():
 # --> [], donc aucune valeurs dans les fichiers de SL, tel que h soit non nul 
 
 
+def visu_maree_large_v3():
+    # --- Visualisation des données synchronisées ---
+
+    # Extraction des colonnes pour la lecture
+    dates = v3[:, 0]
+    profondeur_v3 = v3[:, 3]    # Index 3 : dpt (profondeur)
+    dpt_large = vin_sync[:, 4]  # Index 1 : Hs (hauteur significative au large)
+
+    fig, ax1 = plt.subplots(figsize=(12, 6))
+
+    # Axe 1 : Profondeur (Sonde v3)
+    color_depth = 'tab:blue'
+    ax1.set_xlabel('Date')
+    ax1.set_ylabel('Profondeur v3 (m)', color=color_depth)
+    ax1.plot(dates, profondeur_v3, color=color_depth, label='Profondeur (v3)')
+    ax1.tick_params(axis='y', labelcolor=color_depth)
+    ax1.grid(True, which='both', linestyle='--', alpha=0.5)
+
+    # Axe 2 : Hs au large (Données de forçage)
+    ax2 = ax1.twinx()
+    color_hs = 'tab:red'
+    ax2.set_ylabel('Hs au large (m)', color=color_hs)
+    ax2.plot(dates, dpt_large, color=color_hs, label='dpt Large (vin_sync)', linestyle='--')
+    ax2.tick_params(axis='y', labelcolor=color_hs)
+
+    # Titre et légende
+    plt.title('Comparaison de la marée (v3) et de la hauteur des vagues au large (vin_sync)')
+    fig.tight_layout()
+
+    plt.show()
+
+#visu_maree_large_v3()
+
+
+def visu_maree_large_marnage():
+    # --- Visualisation des données synchronisées ---
+
+    # Extraction des colonnes pour la lecture
+    dates = vin_sync[:, 0]
+    print(marnage.shape)
+    profondeur_v3 = marnage    # Index 3 : dpt (profondeur)
+    dpt_large = vin_sync[:, 4]  # Index 1 : Hs (hauteur significative au large)
+
+    fig, ax1 = plt.subplots(figsize=(12, 6))
+
+    # Axe 1 : Profondeur (Sonde v3)
+    color_depth = 'tab:blue'
+    ax1.set_xlabel('Date')
+    ax1.set_ylabel('Profondeur v3 (m)', color=color_depth)
+    ax1.plot(dates, profondeur_v3, color=color_depth, label='Profondeur (v3)')
+    ax1.tick_params(axis='y', labelcolor=color_depth)
+    ax1.grid(True, which='both', linestyle='--', alpha=0.5)
+
+    # Axe 2 : Hs au large (Données de forçage)
+    ax2 = ax1.twinx()
+    color_hs = 'tab:red'
+    ax2.set_ylabel('Hs au large (m)', color=color_hs)
+    ax2.plot(dates, dpt_large, color=color_hs, label='dpt Large (vin_sync)', linestyle='--')
+    ax2.tick_params(axis='y', labelcolor=color_hs)
+
+    # Titre et légende
+    plt.title('Comparaison de la marée (v3) et de la hauteur des vagues au large (vin_sync)')
+    fig.tight_layout()
+
+    plt.show()
+
+
+visu_maree_large_marnage()
