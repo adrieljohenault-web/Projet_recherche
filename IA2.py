@@ -13,6 +13,11 @@ from datetime import timedelta
 import matplotlib.pyplot as plt
 import csv
 from scipy.optimize import nnls
+import numpy as np
+import xgboost as xgb
+from sklearn.multioutput import MultiOutputRegressor
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error, r2_score
 
 from variables_globales import *
 from Fonction_de_transfert import *
@@ -116,7 +121,7 @@ def get_X(vin_sync, marn_data, depth1, depth2, depth3):
     return np.vstack((X1, X2, X3))
 
 # Utilisation
-X = get_X(vin_sync, marnage, depth_v1, depth_v2, depth_v3)
+X_dates = get_X(vin_sync, marnage, depth_v1, depth_v2, depth_v3)
 
 
 #### Étape 2 ####
@@ -206,6 +211,54 @@ def get_hyp(v1, v2, v3, vin_sync, output_dir="."):
 
     return Y1, Y2, Y3
 
+def get_y():
+    Y1 = load_coefs(os.path.join(".", "coefs_sonde1.csv"))
+    Y2 = load_coefs(os.path.join(".", "coefs_sonde2.csv"))
+    Y3 = load_coefs(os.path.join(".", "coefs_sonde3.csv"))
+
+    return np.vstack((Y1,Y2,Y3))
+
+y_dates = get_y()
 
 #### Étape 3 ####
 # L'objectif de cette étape est de mettre en place le modèle d'apprentissage f(X) = y
+
+
+def get_X_y_wo_date(X,y):
+    for k in range(X.shape[0]):
+        if X[k][0] != y[k][0]:
+            print(k)
+    return X[:, 1:], y[:, 1:]
+
+X,y = get_X_y_wo_date(X_dates,y_dates)
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+#Définition du modèle de base XGBoost
+xgb_model = xgb.XGBRegressor(
+    n_estimators=100,      # Nombre d'arbres
+    learning_rate=0.1,     # Vitesse d'apprentissage
+    max_depth=6,           # Profondeur des arbres
+    subsample=0.8,         # Fraction des données utilisées par arbre
+    colsample_bytree=0.8,  # Fraction des colonnes utilisées par arbre
+    objective='reg:squarederror',
+    random_state=42, 
+    n_jobs=2
+)
+
+multi_model = MultiOutputRegressor(xgb_model)
+
+print("Début de l'entraînement...")
+multi_model.fit(X_train, y_train)
+print("Entraînement terminé.")
+
+#prediction
+y_pred = multi_model.predict(X_test)
+
+#Évaluation des performances
+for i in range(y.shape[1]):
+    mse = mean_squared_error(y_test[:, i], y_pred[:, i])
+    r2 = r2_score(y_test[:, i], y_pred[:, i])
+    print(f"\n--- Cible y{i+1} ---")
+    print(f"Erreur Quadratique Moyenne (MSE) : {mse:.4f}")
+    print(f"Score R2 (Précision) : {r2:.4f}")
