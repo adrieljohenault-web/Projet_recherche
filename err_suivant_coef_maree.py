@@ -169,7 +169,7 @@ def plot_err_vs_coef_maree(
 # ------------------------------------------------------------------
 # Optionnel : lancement standalone (reconstruit v_marree depuis les données brutes)
 # ------------------------------------------------------------------
-if __name__ == "__main__":
+if False:
     import os
     import sys
 
