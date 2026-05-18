@@ -237,9 +237,9 @@ def get_IA2():
 
     #Définition du modèle de base XGBoost
     xgb_model = xgb.XGBRegressor(
-        n_estimators=50,      # Nombre d'arbres
+        n_estimators=100,      # Nombre d'arbres
         learning_rate=0.05,     # Vitesse d'apprentissage
-        max_depth=3,           # Profondeur des arbres
+        max_depth=7,           # Profondeur des arbres
         subsample=0.8,         # Fraction des données utilisées par arbre
         colsample_bytree=0.8,  # Fraction des colonnes utilisées par arbre
         objective='reg:squarederror',
@@ -263,3 +263,4 @@ def get_IA2():
         print(f"\n--- Cible y{i+1} ---")
         print(f"Erreur Quadratique Moyenne (MSE) : {mse:.4f}")
         print(f"Score R2 (Précision) : {r2:.4f}")
+#get_IA2()
