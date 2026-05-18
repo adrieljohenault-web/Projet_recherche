@@ -229,7 +229,7 @@ def optimize_hyperparams(X, y, test_size=0.2, output_dir="./figures"):
 # POINT D'ENTRÉE
 # ============================================================================
 
-if True:
+if False:
     # ------------------------------------------------------------------------
     # OPTION 1 : Charger depuis ton projet IA2.py (RECOMMANDÉ)
     # ------------------------------------------------------------------------
@@ -263,3 +263,9 @@ if True:
 
     # Lancer l'optimisation
     results, best_params = optimize_hyperparams(X, y, output_dir="./figures_xgboost")
+
+
+if True:
+    from IA2 import get_X_y_wo_date, X_dates, y_dates
+    X, y = get_X_y_wo_date(X_dates, y_dates)
+    results, best = optimize_hyperparams(X, y, output_dir="./figures")
