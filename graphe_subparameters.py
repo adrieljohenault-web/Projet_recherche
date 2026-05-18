@@ -265,7 +265,7 @@ if False:
     results, best_params = optimize_hyperparams(X, y, output_dir="./figures_xgboost")
 
 
-if True:
+if False:
     from IA2 import get_X_y_wo_date, X_dates, y_dates
     X, y = get_X_y_wo_date(X_dates, y_dates)
     results, best = optimize_hyperparams(X, y, output_dir="./figures")

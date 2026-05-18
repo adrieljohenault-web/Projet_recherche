@@ -58,7 +58,6 @@ depth_v1_adcp = get_mean_depth(v_adcp1, 0, points_and_weights_adcp)
 depth_v2_adcp = get_mean_depth(v_adcp2, 1, points_and_weights_adcp)
 depth_v3_adcp = get_mean_depth(v_adcp3, 2, points_and_weights_adcp)
 
-print(depth_v1,depth_v2,depth_v3, depth_v1_adcp, depth_v2_adcp,depth_v3_adcp)
 
 # calcul du marnage 
 
