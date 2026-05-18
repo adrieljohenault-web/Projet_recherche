@@ -176,3 +176,50 @@ vin_sync = coincide_large_to_shore(v1[:, 0], vin)
 # Après coincide_large_to_shore, re-synchroniser
 v1, v2, v3, v_marree, vin_sync = synchroniser(v1, v2, v3, v_marree, vin_sync)
 
+# Importation et formatage des données ADCP
+
+with open(
+    os.path.join(path, "donnes_campagne2022", "waves_SEAEU_exp2022_ADCP1.csv"), 'r'
+) as file:
+    lines = file.readlines()[1:]
+for i in range(len(lines)):
+    lines[i] = lines[i].split()
+    lines[i][0] = lines[i][0].split('-')
+    lines[i][1] = lines[i][1].split(',')
+    lines[i][1][0] = lines[i][1][0].split(':')
+
+
+sortie_adcp1 = []
+for i in range(len(lines)):
+    sortie_adcp1.append([datetime.datetime(int(lines[i][0][0]), int(lines[i][0][1]), int(lines[i][0][2]), int(lines[i][1][0][0]), int(lines[i][1][0][1]), int(lines[i][1][0][2])), float(lines[i][1][1]), float(lines[i][1][2]), float(lines[i][1][3])])
+
+with open(
+    os.path.join(path, "donnes_campagne2022", "waves_SEAEU_exp2022_ADCP2.csv"), 'r'
+) as file:
+    lines = file.readlines()[1:]
+for i in range(len(lines)):
+    lines[i] = lines[i].split()
+    lines[i][0] = lines[i][0].split('-')
+    lines[i][1] = lines[i][1].split(',')
+    lines[i][1][0] = lines[i][1][0].split(':')
+
+sortie_adcp2 = []
+for i in range(len(lines)):
+    sortie_adcp2.append([datetime.datetime(int(lines[i][0][0]), int(lines[i][0][1]), int(lines[i][0][2]), int(lines[i][1][0][0]), int(lines[i][1][0][1]), int(lines[i][1][0][2])), float(lines[i][1][1]), float(lines[i][1][2]), float(lines[i][1][3])])
+
+
+with open(
+    os.path.join(path, "donnes_campagne2022", "waves_SEAEU_exp2022_ADCP3.csv"), 'r'
+) as file:
+    lines = file.readlines()[1:]
+for i in range(len(lines)):
+    lines[i] = lines[i].split()
+    lines[i][0] = lines[i][0].split('-')
+    lines[i][1] = lines[i][1].split(',')
+    lines[i][1][0] = lines[i][1][0].split(':')
+
+sortie_adcp3 = []
+for i in range(len(lines)):
+    sortie_adcp2.append([datetime.datetime(int(lines[i][0][0]), int(lines[i][0][1]), int(lines[i][0][2]), int(lines[i][1][0][0]), int(lines[i][1][0][1]), int(lines[i][1][0][2])), float(lines[i][1][1]), float(lines[i][1][2]), float(lines[i][1][3])])
+
+print(sortie_adcp1, sortie_adcp2, sortie_adcp3)
