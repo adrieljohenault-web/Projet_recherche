@@ -230,35 +230,36 @@ def get_X_y_wo_date(X,y):
             print(k)
     return X[:, 1:], y[:, 1:]
 
-X,y = get_X_y_wo_date(X_dates,y_dates)
+def get_IA2():
+    X,y = get_X_y_wo_date(X_dates,y_dates)
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-#Définition du modèle de base XGBoost
-xgb_model = xgb.XGBRegressor(
-    n_estimators=100,      # Nombre d'arbres
-    learning_rate=0.1,     # Vitesse d'apprentissage
-    max_depth=6,           # Profondeur des arbres
-    subsample=0.8,         # Fraction des données utilisées par arbre
-    colsample_bytree=0.8,  # Fraction des colonnes utilisées par arbre
-    objective='reg:squarederror',
-    random_state=42, 
-    n_jobs=2
-)
+    #Définition du modèle de base XGBoost
+    xgb_model = xgb.XGBRegressor(
+        n_estimators=100,      # Nombre d'arbres
+        learning_rate=0.1,     # Vitesse d'apprentissage
+        max_depth=6,           # Profondeur des arbres
+        subsample=0.8,         # Fraction des données utilisées par arbre
+        colsample_bytree=0.8,  # Fraction des colonnes utilisées par arbre
+        objective='reg:squarederror',
+        random_state=42, 
+        n_jobs=2
+    )
 
-multi_model = MultiOutputRegressor(xgb_model)
+    multi_model = MultiOutputRegressor(xgb_model)
 
-print("Début de l'entraînement...")
-multi_model.fit(X_train, y_train)
-print("Entraînement terminé.")
+    print("Début de l'entraînement...")
+    multi_model.fit(X_train, y_train)
+    print("Entraînement terminé.")
 
-#prediction
-y_pred = multi_model.predict(X_test)
+    #prediction
+    y_pred = multi_model.predict(X_test)
 
-#Évaluation des performances
-for i in range(y.shape[1]):
-    mse = mean_squared_error(y_test[:, i], y_pred[:, i])
-    r2 = r2_score(y_test[:, i], y_pred[:, i])
-    print(f"\n--- Cible y{i+1} ---")
-    print(f"Erreur Quadratique Moyenne (MSE) : {mse:.4f}")
-    print(f"Score R2 (Précision) : {r2:.4f}")
+    #Évaluation des performances
+    for i in range(y.shape[1]):
+        mse = mean_squared_error(y_test[:, i], y_pred[:, i])
+        r2 = r2_score(y_test[:, i], y_pred[:, i])
+        print(f"\n--- Cible y{i+1} ---")
+        print(f"Erreur Quadratique Moyenne (MSE) : {mse:.4f}")
+        print(f"Score R2 (Précision) : {r2:.4f}")
