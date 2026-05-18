@@ -175,3 +175,137 @@ def hist_err_marr():
         n_bins=10,
         save_path="err_vs_coef_maree.png",   # optionnel
     )
+
+def generer_illustrations_comparaison(v1, v2, v3, vin_sync, v_marree, save_prefix="transfer_vs_reel"):
+    """
+    Génère deux figures de comparaison pour les 3 sondes (Hs et Tp) :
+    1. Une comparaison temporelle (Séries temporelles superposées)
+    2. Un diagramme de dispersion (Scatter plot avec ligne d'identité 1:1)
+    """
+    import matplotlib.pyplot as plt
+    import numpy as np
+
+    sondes_data = [v1, v2, v3]
+    closest_points = [points_and_weights[0], points_and_weights[1], points_and_weights[2]]
+
+    # Initialisation des structures pour stocker les prédictions de la fonction de transfert
+    predictions = {
+        1: {"Hs": [], "Tp": []},
+        2: {"Hs": [], "Tp": []},
+        3: {"Hs": [], "Tp": []}
+    }
+    dates = [row[0] for row in v1]
+    n_points = len(v1)
+
+    print("Calcul des prédictions de la fonction de transfert en cours...")
+    for i in range(n_points):
+        coef      = float(v_marree[i][1])
+        Hs_large  = float(vin_sync[i][1])
+        Tp_large  = float(vin_sync[i][2])
+        Dir_large = float(vin_sync[i][3])
+
+        for s_idx in [1, 2, 3]:
+            closest = closest_points[s_idx - 1]
+            list_points = [int(ind) for ind, w in closest]
+            weights     = [w        for ind, w in closest]
+
+            # Appel à votre fonction géométrique vectorisée
+            sortie = OS2NS_vectorized_per_points2(
+                Hs_large, Tp_large, Dir_large, coef, list_points
+            )
+
+            # Reconstitution par pondération des 4 points les plus proches
+            Hs_res = sum(sortie[j][0] * weights[j] for j in range(4))
+            Tp_res = sum(sortie[j][1] * weights[j] for j in range(4))
+
+            predictions[s_idx]["Hs"].append(Hs_res)
+            predictions[s_idx]["Tp"].append(Tp_res)
+
+    print("Génération des graphiques...")
+
+    # ==========================================
+    # FIGURE 1 : SÉRIES TEMPORELLES COMPARATIVES
+    # ==========================================
+    fig_time, axes_time = plt.subplots(3, 2, figsize=(16, 12), sharex='col')
+    
+    for s_idx in [1, 2, 3]:
+        v_sonde = sondes_data[s_idx - 1]
+        Hs_reel = v_sonde[:, 1].astype(float)
+        Tp_reel = v_sonde[:, 2].astype(float)
+        
+        Hs_pred = np.array(predictions[s_idx]["Hs"])
+        Tp_pred = np.array(predictions[s_idx]["Tp"])
+        
+        row = s_idx - 1
+        
+        # Colonne gauche : Hs
+        axes_time[row, 0].plot(dates, Hs_reel, label="Mesuré (Sonde)", color="black", alpha=0.7, lw=1.5)
+        axes_time[row, 0].plot(dates, Hs_pred, label="Fonction de Transfert", color="crimson", linestyle="--", alpha=0.85, lw=1.5)
+        axes_time[row, 0].set_ylabel(f"Hs (m) - Sonde {s_idx}", fontsize=11)
+        axes_time[row, 0].grid(True, linestyle=":", alpha=0.6)
+        axes_time[row, 0].legend(loc="upper right")
+        if row == 0:
+            axes_time[row, 0].set_title("Hauteur significative des vagues (Hs)", fontsize=14, fontweight='bold')
+            
+        # Colonne droite : Tp
+        axes_time[row, 1].plot(dates, Tp_reel, label="Mesuré (Sonde)", color="black", alpha=0.7, lw=1.5)
+        axes_time[row, 1].plot(dates, Tp_pred, label="Fonction de Transfert", color="royalblue", linestyle="--", alpha=0.85, lw=1.5)
+        axes_time[row, 1].set_ylabel(f"Tp (s) - Sonde {s_idx}", fontsize=11)
+        axes_time[row, 1].grid(True, linestyle=":", alpha=0.6)
+        axes_time[row, 1].legend(loc="upper right")
+        if row == 0:
+            axes_time[row, 1].set_title("Période de pic (Tp)", fontsize=14, fontweight='bold')
+
+    fig_time.autofmt_xdate()
+    plt.tight_layout()
+    fig_time.savefig(f"{save_prefix}_temporelle.png", dpi=300)
+    plt.close(fig_time)
+
+    # ==========================================
+    # FIGURE 2 : DIAGRAMMES DE DISPERSION (1:1)
+    # ==========================================
+    fig_scat, axes_scat = plt.subplots(3, 2, figsize=(12, 14))
+    
+    for s_idx in [1, 2, 3]:
+        v_sonde = sondes_data[s_idx - 1]
+        Hs_reel = v_sonde[:, 1].astype(float)
+        Tp_reel = v_sonde[:, 2].astype(float)
+        
+        Hs_pred = np.array(predictions[s_idx]["Hs"])
+        Tp_pred = np.array(predictions[s_idx]["Tp"])
+        
+        row = s_idx - 1
+        
+        # Scatter Hs
+        axes_scat[row, 0].scatter(Hs_reel, Hs_pred, alpha=0.4, color="crimson", edgecolors='none', s=20)
+        lims_hs = [0, max(max(Hs_reel), max(Hs_pred)) * 1.05]
+        axes_scat[row, 0].plot(lims_hs, lims_hs, 'k--', alpha=0.75, label="Ligne 1:1")
+        axes_scat[row, 0].set_xlim(lims_hs)
+        axes_scat[row, 0].set_ylim(lims_hs)
+        axes_scat[row, 0].set_xlabel("Hs Mesuré (m)", fontsize=10)
+        axes_scat[row, 0].set_ylabel(f"Hs Prédit (m) - Sonde {s_idx}", fontsize=10)
+        axes_scat[row, 0].grid(True, linestyle=":", alpha=0.6)
+        axes_scat[row, 0].legend(loc="upper left")
+        if row == 0:
+            axes_scat[row, 0].set_title("Dispersion Hs", fontsize=13, fontweight='bold')
+            
+        # Scatter Tp
+        axes_scat[row, 1].scatter(Tp_reel, Tp_pred, alpha=0.4, color="royalblue", edgecolors='none', s=20)
+        lims_tp = [0, max(max(Tp_reel), max(Tp_pred)) * 1.05]
+        axes_scat[row, 1].plot(lims_tp, lims_tp, 'k--', alpha=0.75, label="Ligne 1:1")
+        axes_scat[row, 1].set_xlim(lims_tp)
+        axes_scat[row, 1].set_ylim(lims_tp)
+        axes_scat[row, 1].set_xlabel("Tp Mesuré (s)", fontsize=10)
+        axes_scat[row, 1].set_ylabel(f"Tp Prédit (s) - Sonde {s_idx}", fontsize=10)
+        axes_scat[row, 1].grid(True, linestyle=":", alpha=0.6)
+        axes_scat[row, 1].legend(loc="upper left")
+        if row == 0:
+            axes_scat[row, 1].set_title("Dispersion Tp", fontsize=13, fontweight='bold')
+
+    plt.tight_layout()
+    fig_scat.savefig(f"{save_prefix}_dispersion.png", dpi=300)
+    plt.close(fig_scat)
+
+    print(f"Illustrations sauvegardées avec succès :\n - {save_prefix}_temporelle.png\n - {save_prefix}_dispersion.png")
+
+generer_illustrations_comparaison(v1, v2, v3, vin_sync, v_marree, save_prefix="transfer_vs_reel")

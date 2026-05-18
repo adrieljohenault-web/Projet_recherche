@@ -225,4 +225,4 @@ for i in range(len(lines)):
 v_adcp1 = np.array(sortie_adcp1)
 v_adcp2 = np.array(sortie_adcp2)
 v_adcp3 = np.array(sortie_adcp3)
-#print(sortie_adcp1, sortie_adcp2, sortie_adcp3)
+
