@@ -21,7 +21,7 @@ from sklearn.metrics import mean_squared_error, r2_score
 
 from variables_globales import *
 from Fonction_de_transfert import *
-from sonde_donnee_formatage import v1, v2, v3, vin,vin_sync
+from sonde_donnee_formatage import v1, v2, v3,v_adcp1, v_adcp2, v_adcp3, vin,vin_sync
 
 
 
@@ -40,13 +40,25 @@ from sonde_donnee_formatage import v1, v2, v3, vin,vin_sync
 
 # calcul des depth
 
-def get_mean_depth(v_sonde):
-    depth = v_sonde[:,3]
-    return np.mean(depth)
+def get_mean_depth(v_sonde, num_sonde,points):
+    depth = 0
+    l = points[num_sonde]
+    for k in range(len(l)):
+        idx = l[k][0]
+        w = l[k][1]
+        depth += bathy[idx][2]
+    return depth
 
-depth_v1 = get_mean_depth(v1)
-depth_v2 = get_mean_depth(v2)
-depth_v3 = get_mean_depth(v3)
+
+
+depth_v1 = get_mean_depth(v1, 0, points_and_weights)
+depth_v2 = get_mean_depth(v2, 1, points_and_weights)
+depth_v3 = get_mean_depth(v3, 2, points_and_weights)
+depth_v1_adcp = get_mean_depth(v_adcp1, 0, points_and_weights_adcp)
+depth_v2_adcp = get_mean_depth(v_adcp2, 1, points_and_weights_adcp)
+depth_v3_adcp = get_mean_depth(v_adcp3, 2, points_and_weights_adcp)
+
+print(depth_v1,depth_v2,depth_v3, depth_v1_adcp, depth_v2_adcp,depth_v3_adcp)
 
 # calcul du marnage 
 
@@ -263,5 +275,4 @@ def get_IA2():
         print(f"\n--- Cible y{i+1} ---")
         print(f"Erreur Quadratique Moyenne (MSE) : {mse:.4f}")
         print(f"Score R2 (Précision) : {r2:.4f}")
-
 #get_IA2()

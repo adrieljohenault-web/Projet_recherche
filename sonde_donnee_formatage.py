@@ -220,6 +220,9 @@ for i in range(len(lines)):
 
 sortie_adcp3 = []
 for i in range(len(lines)):
-    sortie_adcp2.append([datetime.datetime(int(lines[i][0][0]), int(lines[i][0][1]), int(lines[i][0][2]), int(lines[i][1][0][0]), int(lines[i][1][0][1]), int(lines[i][1][0][2])), float(lines[i][1][1]), float(lines[i][1][2]), float(lines[i][1][3])])
+    sortie_adcp3.append([datetime.datetime(int(lines[i][0][0]), int(lines[i][0][1]), int(lines[i][0][2]), int(lines[i][1][0][0]), int(lines[i][1][0][1]), int(lines[i][1][0][2])), float(lines[i][1][1]), float(lines[i][1][2]), float(lines[i][1][3])])
 
+v_adcp1 = np.array(sortie_adcp1)
+v_adcp2 = np.array(sortie_adcp2)
+v_adcp3 = np.array(sortie_adcp3)
 #print(sortie_adcp1, sortie_adcp2, sortie_adcp3)

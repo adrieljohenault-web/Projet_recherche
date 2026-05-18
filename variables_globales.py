@@ -76,4 +76,33 @@ points_and_weights = [
     for j in range(3)
 ]
 
-# je sus
+# même travail pour les sondes acdp : 
+d_sonde_acdp = [[0. for _ in range(n_sortie)] for _ in range(3)]
+
+for k in range(n_sortie):
+    for i in range(3):
+        d_sonde_acdp[i][k] = distance_euclidienne([bathy[k][0], bathy[k][1]], sondes[i])
+
+points_inter_adcp = [[[] for _ in range(4)] for _ in range(3)]
+
+for i in range(3):
+    for j in range(4):
+        closest_index_acdp = np.argmin(d_sonde_acdp[i])
+        closest_distance_acdp = np.min(d_sonde_acdp[i])
+        #closest_point = np.array([bathy[closest_index][0], bathy[closest_index][1]])
+        points_inter_adcp[i][j] = [closest_index_acdp, closest_distance_acdp]
+        d_sonde_acdp[i][closest_index_acdp] = 10**10
+
+# Somme des distances des 4 points pour chaque sonde
+
+somme_dist_adcp = [sum([points_inter_adcp[i][j][1] for j in range(4)]) for i in range(3)]
+inv_sum_dist_adcp = [sum([1/points_inter_adcp[i][j][1] for j in range(4)]) for i in range(3)]
+
+#calcul des poids associés à la distance 
+points_and_weights_adcp = [
+    [[points_inter_adcp[j][i][0], (1/points_inter_adcp[j][i][1]) / inv_sum_dist_adcp[j]] 
+     for i in range(4)] 
+    for j in range(3)
+]
+
+print(points_and_weights, points_and_weights_adcp)
