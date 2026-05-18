@@ -11,7 +11,7 @@ SEED = 42
 # Il s'agit des chemins associés au dossier Lookup_table_Vougot
 path_clem = "/Users/clementcotte-grubis/office/PRECH3/repo_PRECH3/Lookup_table_Vougot"
 path_adriel = "/Users/adrielhenault/Documents/ECOLE DES PONTS/1A/TRAVAIL/SCIENTIFIQUE/PARCOURS RECHERCHE/Fichier_d_encadrement/Lookup_table_Vougot"
-path = path_clem
+path = path_adriel
 
 # Emplacements des sondes
 
@@ -20,6 +20,12 @@ sonde2 = [392928.35, 5388515.85]
 sonde3 = [392450.79, 5389091.85]
 
 sondes = [sonde1, sonde2, sonde3]
+
+adcp1 = [388554.62, 5390425.84]
+adcp2 = [391920.86, 5387765.53]
+adcp3 = [391780.68, 5390054.21]
+
+ADCPs = [adcp1, adcp2, adcp3]
 
 def distance_euclidienne(q1: list, q2: list):
     """Calcule la distance euclidienne entre les deux array de même dimension q1 et q2"""

@@ -55,7 +55,12 @@ def generer_carte_bathymetrique_recherche(data_list):
     # On utilise scatter : chaque point est une donnée RÉELLE du dataset
     # 's' définit la taille du point. 'edgecolors=none' évite les artefacts visuels.
     sc = plt.scatter(x_pure, y_pure, c=z_pure, cmap='viridis', s=33, edgecolors='none')
+
+    # Ajout des sondes
+
     plt.scatter([sondes[i][0] for i in range(3)], [sondes[i][1] for i in range(3)], c = 'black', marker = '+', s = 200)
+    plt.scatter([ADCPs[i][0] for i in range(3)], [ADCPs[i][1] for i in range(3)], c = 'pink', marker = '+', s = 200)
+
     # Ajout d'une barre de couleur avec label scientifique
     cbar = plt.colorbar(sc)
     cbar.set_label('Profondeur (m)', rotation=270, labelpad=15)
@@ -75,4 +80,4 @@ def generer_carte_bathymetrique_recherche(data_list):
     plt.show()
 
 
-# generer_carte_bathymetrique_recherche(bathy)
+generer_carte_bathymetrique_recherche(bathy)
