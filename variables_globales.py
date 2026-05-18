@@ -11,7 +11,7 @@ SEED = 42
 # Il s'agit des chemins associés au dossier Lookup_table_Vougot
 path_clem = "/Users/clementcotte-grubis/office/PRECH3/repo_PRECH3/Lookup_table_Vougot"
 path_adriel = "/Users/adrielhenault/Documents/ECOLE DES PONTS/1A/TRAVAIL/SCIENTIFIQUE/PARCOURS RECHERCHE/Fichier_d_encadrement/Lookup_table_Vougot"
-path = path_adriel
+path = path_clem
 
 # Emplacements des sondes
 

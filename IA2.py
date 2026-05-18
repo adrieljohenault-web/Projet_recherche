@@ -237,9 +237,9 @@ def get_IA2():
 
     #Définition du modèle de base XGBoost
     xgb_model = xgb.XGBRegressor(
-        n_estimators=100,      # Nombre d'arbres
-        learning_rate=0.1,     # Vitesse d'apprentissage
-        max_depth=6,           # Profondeur des arbres
+        n_estimators=50,      # Nombre d'arbres
+        learning_rate=0.05,     # Vitesse d'apprentissage
+        max_depth=3,           # Profondeur des arbres
         subsample=0.8,         # Fraction des données utilisées par arbre
         colsample_bytree=0.8,  # Fraction des colonnes utilisées par arbre
         objective='reg:squarederror',
