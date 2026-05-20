@@ -248,5 +248,5 @@ def main():
     print("=" * 70)
 
 
-if True:
+if False:
     main()

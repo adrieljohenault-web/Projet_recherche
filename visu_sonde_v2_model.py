@@ -156,38 +156,107 @@ def train_or_load_model(X_train, y_train, model_path="model_sonde2_5days.pkl"):
 # =============================================================================
 # ÉTAPE 3 : Visualisation
 # =============================================================================
-
 def plot_comparison(dates, real_Hs, real_Tp, pred_Hs, pred_Tp,
                     title="Sonde 2 : Comparaison Données Réelles vs Modèle (5 jours)",
                     save_path="comparison_sonde2_5days.png"):
     """Crée un graphique comparatif Hs et Tp en fonction du temps."""
+
     fig, axes = plt.subplots(2, 1, figsize=(16, 10), sharex=True)
 
-    # --- Graphique Hs ---
+    # =========================================================================
+    # Graphique Hs
+    # =========================================================================
     ax1 = axes[0]
-    ax1.plot(dates, real_Hs, 'b-', label='Hs Réel (sonde)', alpha=0.7, linewidth=1.5)
-    ax1.plot(dates, pred_Hs, 'r--', label='Hs Modèle (prédit)', alpha=0.8, linewidth=1.5)
+
+    # Données réelles : points uniquement
+    ax1.scatter(
+        dates,
+        real_Hs,
+        color='blue',
+        label='Hs Réel (sonde)',
+        alpha=0.7,
+        s=20
+    )
+
+    # Modèle IA : ligne brisée
+    ax1.plot(
+        dates,
+        pred_Hs,
+        'r--',
+        label='Hs Modèle (prédit)',
+        alpha=0.8,
+        linewidth=1.5
+    )
+
+    # Modèle IA : points
+    ax1.scatter(
+        dates,
+        pred_Hs,
+        color='red',
+        alpha=0.7,
+        s=15
+    )
+
     ax1.set_ylabel('Hs [m]', fontsize=12)
-    ax1.set_title(f'{title} - Hauteur Significative', fontsize=14, fontweight='bold')
+    ax1.set_title(
+        f'{title} - Hauteur Significative',
+        fontsize=14,
+        fontweight='bold'
+    )
     ax1.legend(loc='upper right')
     ax1.grid(True, alpha=0.3)
 
-    # --- Graphique Tp ---
+    # =========================================================================
+    # Graphique Tp
+    # =========================================================================
     ax2 = axes[1]
-    ax2.plot(dates, real_Tp, 'b-', label='Tp Réel (sonde)', alpha=0.7, linewidth=1.5)
-    ax2.plot(dates, pred_Tp, 'r--', label='Tp Modèle (prédit)', alpha=0.8, linewidth=1.5)
+
+    # Données réelles : points uniquement
+    ax2.scatter(
+        dates,
+        real_Tp,
+        color='blue',
+        label='Tp Réel (sonde)',
+        alpha=0.7,
+        s=20
+    )
+
+    # Modèle IA : ligne brisée
+    ax2.plot(
+        dates,
+        pred_Tp,
+        'r--',
+        label='Tp Modèle (prédit)',
+        alpha=0.8,
+        linewidth=1.5
+    )
+
+    # Modèle IA : points
+    ax2.scatter(
+        dates,
+        pred_Tp,
+        color='red',
+        alpha=0.7,
+        s=15
+    )
+
     ax2.set_ylabel('Tp [s]', fontsize=12)
     ax2.set_xlabel('Date', fontsize=12)
-    ax2.set_title(f'{title} - Période de Pic', fontsize=14, fontweight='bold')
+    ax2.set_title(
+        f'{title} - Période de Pic',
+        fontsize=14,
+        fontweight='bold'
+    )
     ax2.legend(loc='upper right')
     ax2.grid(True, alpha=0.3)
 
     plt.xticks(rotation=45)
     plt.tight_layout()
     plt.savefig(save_path, dpi=300, bbox_inches='tight')
-    print(f"Graphique sauvegardé : {save_path}")
-    plt.show()
 
+    print(f"Graphique sauvegardé : {save_path}")
+
+    plt.show()
 
 def plot_scatter_comparison(real_Hs, real_Tp, pred_Hs, pred_Tp,
                             save_path="scatter_sonde2_5days.png"):
@@ -434,5 +503,5 @@ def main():
     print("  - model_sonde2_5days.pkl      : Modèle entraîné (sauvegarde)")
 
 
-if False:
+if True:
     main()
